@@ -23,10 +23,10 @@
   --brass:#C9A227;
   --verdigris:#CDD4DD;      /* 逆転＝銀 */
 
-  --p0:#F0E6D2;  /* あなた       */
-  --p1:#B18AE0;  /* ドラキュラ   */
-  --p2:#45C4C4;  /* オオカミ男   */
-  --p3:#E86FC8;  /* フランケン   */
+  --p0:#F2D64B;  /* A 黄     */
+  --p1:#A578F0;  /* B 紫     */
+  --p2:#3BC9E8;  /* C 水色   */
+  --p3:#F0559B;  /* D 桃     */
 
   --s0:#3A6DB5;  /* 水 Aqua  */
   --s1:#AE2E3C;  /* 火 Fire  */
@@ -97,6 +97,80 @@ button:focus-visible,[tabindex]:focus-visible{outline:2px solid var(--ivory);out
 }
 .rrow .act em{font-style:normal;font-family:var(--mono);font-weight:700}
 .rrow .act.wait{color:var(--dim)}
+
+.phasedlg{
+  position:fixed;inset:0;z-index:55;display:flex;
+  align-items:center;justify-content:center;padding:24px;
+  background:rgba(10,15,22,.72);backdrop-filter:blur(3px);
+  animation:pdin .18s ease;
+}
+@keyframes pdin{from{opacity:0}to{opacity:1}}
+.phasebox{
+  background:var(--felt-deep);border:1px solid var(--brass);border-radius:6px;
+  padding:22px 30px 20px;max-width:640px;width:100%;text-align:center;
+  box-shadow:0 12px 44px rgba(0,0,0,.7);
+}
+.phasebox .ph-t{
+  font-family:var(--mincho);font-size:19px;letter-spacing:.12em;
+  color:var(--brass);margin-bottom:9px;
+}
+.phasebox .ph-m{font-size:14px;line-height:1.8;color:var(--ink);margin-bottom:6px}
+.phasebox .ph-m b{color:var(--ivory);font-weight:700}
+.phasebox .ph-s{font-size:12px;color:var(--muted);line-height:1.7;margin-bottom:14px}
+/* 手番順の並び */
+.ph-order{
+  display:flex;gap:6px;align-items:center;justify-content:center;
+  flex-wrap:wrap;margin:14px 0 4px;
+}
+.ph-order{gap:5px}
+.ph-order .pchip{
+  font-family:var(--mono);font-size:12px;font-weight:700;
+  border:1.5px solid;border-radius:3px;padding:4px 8px;white-space:nowrap;
+}
+.ph-order .arw{color:var(--dim);font-size:12px}
+.ph-order .brk{flex-basis:100%;height:0}
+.ph-round{
+  font-family:var(--mono);font-size:10px;letter-spacing:.14em;color:var(--dim);
+  margin:10px 0 2px;
+}
+.phasebox .btn{margin-top:16px;padding:10px 30px}
+.phskip{
+  display:flex;align-items:center;justify-content:center;gap:6px;
+  margin-top:14px;font-size:11.5px;color:var(--muted);cursor:pointer;user-select:none;
+}
+.phskip input{width:14px;height:14px;accent-color:var(--brass);cursor:pointer}
+.phskip:hover{color:var(--ink)}
+.phasebox .hintk{font-family:var(--mono);font-size:9.5px;color:var(--dim);margin-left:8px}
+
+.startveil{
+  position:fixed;inset:0;z-index:70;display:flex;
+  align-items:center;justify-content:center;padding:24px 16px;overflow-y:auto;
+  background:radial-gradient(ellipse 90% 70% at 50% 40%, #2B3F57 0%, #1B2836 55%, #0E141C 100%);
+}
+.startveil.off{display:none}
+.startbox{
+  max-width:520px;width:100%;text-align:center;
+}
+.stitle{
+  font-family:var(--mincho);font-size:38px;letter-spacing:.14em;
+  margin:0 0 4px;font-weight:600;color:var(--ivory);
+}
+.sprov{font-family:var(--sans);font-size:13px;color:var(--dim);letter-spacing:.06em;margin-left:8px}
+.stag{
+  font-size:13.5px;color:var(--brass);letter-spacing:.04em;margin:0 0 22px;line-height:1.7;
+}
+.snote{
+  font-size:11.5px;color:var(--muted);line-height:1.75;text-align:left;
+  border:1px solid #33455A;border-radius:4px;background:rgba(0,0,0,.22);
+  padding:11px 15px;margin-bottom:20px;
+}
+.snote b{color:var(--ivory)}
+.srow{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-bottom:22px}
+.sopt{display:flex;flex-direction:column;gap:4px;align-items:flex-start}
+.sopt label{font-size:10.5px;color:var(--dim);letter-spacing:.1em;font-family:var(--mono)}
+.sopt select{min-width:132px}
+.sbtns{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+.btn.big{padding:13px 40px;font-size:15px;letter-spacing:.08em}
 
 .glossveil{
   position:fixed;inset:0;z-index:60;display:none;
@@ -237,6 +311,14 @@ dl.gl dd b{color:var(--ink)}
 .hui li{font-size:13px}
 @media (max-width:640px){ .hgrid{grid-template-columns:1fr} }
 
+.narrowwarn{
+  display:none;
+  border:1px solid var(--warn);border-radius:3px;
+  background:rgba(217,146,74,.10);color:var(--warn);
+  font-size:11.5px;line-height:1.5;padding:7px 11px;margin-bottom:8px;
+}
+@media (max-width:1180px){ .narrowwarn{display:block} }
+
 .roundsnote{
   font-family:var(--sans);font-size:11px;color:var(--muted);
   padding:0 2px 6px;line-height:1.5;
@@ -277,10 +359,50 @@ dl.gl dd b{color:var(--ink)}
   font-family:var(--mono);font-size:9.5px;letter-spacing:.22em;color:var(--dim);
   text-transform:uppercase;margin:0 0 4px;
 }
-.track{display:grid;grid-template-columns:repeat(15,1fr);gap:2px}
+.board{
+  display:grid;grid-template-columns:64px repeat(15,1fr);
+  gap:2px;font-family:var(--mono);
+}
+/* 行ラベル（左端） */
+.bl{
+  display:flex;align-items:center;gap:5px;padding:0 6px;
+  font-size:11px;color:var(--muted);white-space:nowrap;overflow:hidden;
+  border-right:1px solid #33455A;
+}
+.bl.plr{border-left:3px solid transparent;border-radius:2px 0 0 2px}
+.bl .who{font-weight:700;font-size:11.5px;letter-spacing:.02em}
+/* ビッドタイル */
+.bidtile{
+  display:inline-flex;align-items:center;justify-content:center;
+  min-width:22px;height:20px;border-radius:3px;
+  border:1.5px solid var(--brass);color:var(--brass);
+  font-size:13px;font-weight:700;line-height:1;flex:0 0 auto;
+}
+.bidtile.none{border-color:#3A4A5E;color:var(--dim);font-size:11px}
+.bidtile.done{border-color:#79C08D;color:#79C08D;background:rgba(121,192,138,.14)}
+.bidtile.over{border-color:#E06C75;color:#E06C75;background:rgba(224,108,117,.12)}
+
+/* 布石スロット */
+.track{display:contents}
+/* プレイヤー行のマス */
+.tk{
+  border:1px solid rgba(255,255,255,.05);border-radius:2px;
+  background:rgba(0,0,0,.14);min-height:23px;
+  display:flex;align-items:center;justify-content:center;
+  transition:background .2s,border-color .2s;
+}
+.tk.past{opacity:.5}
+.tk.now{border-color:var(--ivory);background:rgba(244,237,222,.07)}
+/* 獲得マーカー（10mm角ガラスタイル相当） */
+.mk{
+  width:17px;height:17px;border-radius:2px;
+  box-shadow:0 1px 3px rgba(0,0,0,.5), inset 0 1px 0 rgba(255,255,255,.35);
+  animation:mkin .22s cubic-bezier(.2,.8,.3,1);
+}
+@keyframes mkin{from{transform:scale(.3);opacity:0}to{transform:scale(1);opacity:1}}
 .slot{
   border:1px solid #33455A;border-radius:2px;background:var(--felt-deep);
-  min-height:50px;padding:2px;display:flex;flex-direction:column;gap:2px;
+  min-height:44px;padding:2px;display:flex;flex-direction:column;gap:2px;
   transition:border-color .2s,opacity .2s;position:relative;
 }
 .slot .no{font-family:var(--mono);font-size:11px;color:#8B96A4;text-align:center;line-height:1.25}
@@ -324,10 +446,10 @@ dl.gl dd b{color:var(--ink)}
   position:relative;border-radius:8px;overflow:hidden;
   background:
     radial-gradient(ellipse 130% 90% at 50% 46%, #2B3F57 0%, var(--felt) 55%, var(--felt-deep) 100%);
-  min-height:430px;
+  min-height:392px;
   display:grid;
-  grid-template-columns:132px 1fr 132px;
-  grid-template-rows:92px 1fr 148px;
+  grid-template-columns:168px 1fr 168px;
+  grid-template-rows:84px 1fr 138px;
   grid-template-areas:
     "corner-a north corner-b"
     "west     center east"
@@ -352,7 +474,11 @@ body[data-rank="R"] .table::after{opacity:1}
 /* 座席 */
 .seat{position:relative;z-index:2;display:flex;flex-direction:column;align-items:center;gap:4px;padding:5px}
 .seat-n{grid-area:north;flex-direction:column}
-.seat-w{grid-area:west;justify-content:center}
+.seat-w{grid-area:west;justify-content:center;align-items:flex-start;padding-left:8px}
+.seat-e{align-items:flex-end;padding-right:8px}
+.seat-w .plate,.seat-e .plate{white-space:nowrap}
+.seat-w .minis,.seat-e .minis{justify-content:flex-start}
+.seat-e .minis{justify-content:flex-end}
 .seat-e{grid-area:east;justify-content:center}
 .seat-s{grid-area:south;justify-content:flex-end;padding-bottom:10px}
 
@@ -380,7 +506,7 @@ body[data-rank="R"] .table::after{opacity:1}
 .backs .cardback{margin-left:-15px}
 .backs .cardback:first-child{margin-left:0}
 .seat-w .backs,.seat-e .backs{flex-direction:column}
-.seat-w .backs .cardback,.seat-e .backs .cardback{margin-left:0;margin-top:-30px}
+.seat-w .backs .cardback,.seat-e .backs .cardback{margin-left:0;margin-top:-27px}
 .seat-w .backs .cardback:first-child,.seat-e .backs .cardback:first-child{margin-top:0}
 
 .minis{display:flex;gap:4px;flex-wrap:wrap;justify-content:center;min-height:20px}
@@ -395,7 +521,7 @@ body[data-rank="R"] .table::after{opacity:1}
 .center{grid-area:center;position:relative;z-index:2}
 .lens{
   position:absolute;left:50%;top:47%;transform:translate(-50%,-50%);
-  width:94px;height:94px;border-radius:50%;
+  width:86px;height:86px;border-radius:50%;
   display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;
   background:radial-gradient(circle at 42% 36%, rgba(255,255,255,.10), rgba(0,0,0,.32));
   border:1px solid rgba(244,237,222,.28);
@@ -403,7 +529,7 @@ body[data-rank="R"] .table::after{opacity:1}
   pointer-events:none;
 }
 .lens .kanji{
-  font-family:var(--mincho);font-size:33px;line-height:1;font-weight:600;
+  font-family:var(--mincho);font-size:30px;line-height:1;font-weight:600;
   transition:color .5s;
 }
 .lens .kanji.N{color:var(--brass)} .lens .kanji.Rv{color:var(--verdigris)}
@@ -434,7 +560,7 @@ body[data-rank="R"] .table::after{opacity:1}
 
 /* ── 手札 ── */
 .handrow{display:flex;justify-content:center;align-items:flex-end;gap:0;padding:0 8px}
-.hcard{margin-left:-20px;transition:transform .16s;position:relative}
+.hcard{margin-left:-18px;transition:transform .16s;position:relative}
 .hcard:first-child{margin-left:0}
 .hcard.playable{cursor:pointer}
 .hcard.playable:hover{transform:translateY(-16px);z-index:5}
@@ -561,11 +687,11 @@ details.logbox summary{
 .played.winner .svgcard{ transform:scale(1.10); transition:transform .2s }
 
 /* 解決の説明文 */
-.offerstrip{flex-direction:column;align-items:stretch;gap:8px}
-.offerstrip .srow{display:flex;gap:9px;align-items:flex-start}
+.offerstrip{flex-direction:column;align-items:center;gap:9px;max-width:min(94%,660px)}
+.offerstrip .srow{display:flex;gap:9px;align-items:flex-start;flex-wrap:wrap;justify-content:center}
 .offerstrip .expl{
-  font-family:var(--sans);font-size:11.5px;color:var(--muted);line-height:1.6;
-  border-top:1px solid #33455A;padding-top:7px;max-width:520px;
+  font-family:var(--sans);font-size:11.5px;color:var(--muted);line-height:1.65;
+  border-top:1px solid #33455A;padding-top:8px;width:100%;text-align:left;
 }
 .offerstrip .expl b{color:var(--ink);font-weight:600}
 .offerstrip .expl .ok{color:#79C08D}
@@ -590,8 +716,14 @@ details.logbox summary{
 .reactpop .btn{padding:12px 18px;font-size:13px;white-space:nowrap}
 
 /* ── リアクティブ解決の可視化 ── */
+body[data-resolve="1"] .seat .plate,
+body[data-resolve="1"] .seat .minis,
+body[data-resolve="1"] .seat .leadmark,
+body[data-resolve="1"] .lens{
+  opacity:.18;transition:opacity .18s;
+}
 .offerstrip{
-  position:absolute;left:50%;top:0;transform:translateX(-50%);z-index:8;
+  position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);z-index:12;
   display:flex;gap:9px;align-items:flex-start;
   background:rgba(8,13,20,.86);border:1px solid #46586E;border-radius:5px;
   padding:8px 12px 7px;backdrop-filter:blur(3px);
@@ -619,10 +751,9 @@ details.logbox summary{
 .offitem.placed .tag{color:var(--warn)}
 
 .changebanner{
-  position:absolute;left:50%;bottom:-6px;transform:translateX(-50%);z-index:8;
-  background:rgba(8,13,20,.9);border:1px solid var(--brass);border-radius:4px;
-  padding:7px 16px;font-family:var(--mono);font-size:13px;white-space:nowrap;
-  box-shadow:0 4px 18px rgba(0,0,0,.5);
+  border:1px solid var(--brass);border-radius:4px;background:rgba(201,162,39,.10);
+  padding:7px 16px;font-family:var(--mono);font-size:13px;
+  text-align:center;line-height:1.6;
 }
 .changebanner .arrow{color:var(--dim);margin:0 7px}
 .offerstrip .closewrap{
@@ -729,13 +860,53 @@ details.logbox summary{
     </select>
     <label class="modelab" for="speed" id="lbSpeed">AIの思考速度</label>
     <select id="speed" class="sel-mode">
+      <option value="2.6" selected></option>
       <option value="1"></option>
-      <option value="2" selected></option>
-      <option value="3.2"></option>
     </select>
     <button class="btn" id="helpbtn"></button>
     <button class="btn" id="glossbtn"></button>
     <button class="btn" id="newgame"></button>
+  </div>
+
+  <div class="phasedlg" id="phasedlg" style="display:none">
+    <div class="phasebox">
+      <div class="ph-t" id="phTitle"></div>
+      <div class="ph-m" id="phMsg"></div>
+      <div class="ph-s" id="phSub"></div>
+      <div id="phOrder"></div>
+      <button class="btn primary" id="phBtn"></button>
+      <span class="hintk">Enter</span>
+      <label class="phskip"><input type="checkbox" id="phSkip"><span id="phSkipLbl"></span></label>
+    </div>
+  </div>
+
+  <div class="startveil" id="startveil">
+    <div class="startbox">
+      <h1 class="stitle">ElemenTrick<span class="sprov" id="sProv"></span></h1>
+      <p class="stag" id="sTagline"></p>
+      <div class="snote" id="sNote"></div>
+      <div class="srow">
+        <div class="sopt">
+          <label id="sLbRounds"></label>
+          <select id="sRounds" class="sel-mode"></select>
+        </div>
+        <div class="sopt">
+          <label id="sLbSpeed"></label>
+          <select id="sSpeed" class="sel-mode"></select>
+        </div>
+        <div class="sopt">
+          <label id="sLbLang"></label>
+          <select id="sLang" class="sel-mode">
+            <option value="ja">日本語</option>
+            <option value="en">English</option>
+          </select>
+        </div>
+      </div>
+      <div class="sbtns">
+        <button class="btn primary big" id="startbtn"></button>
+        <button class="btn" id="startrules"></button>
+      </div>
+    </div>
   </div>
 
   <div class="glossveil" id="glossveil">
@@ -747,6 +918,8 @@ details.logbox summary{
       <div class="helpbody" id="glossBody"></div>
     </div>
   </div>
+
+  <div class="narrowwarn" id="narrowWarn"></div>
 
   <div class="roundsnote" id="roundsNote"></div>
 
@@ -776,7 +949,7 @@ details.logbox summary{
         </div>
       </div>
 
-      <div class="track" id="track"></div>
+      <div class="board" id="board"></div>
       <div class="paytable" id="paytable"></div>
     </div>
 
@@ -811,12 +984,42 @@ const I18N = {
 ja:{
   title:'ElemenTrick', prov:'（仮）', rules:'ルール', glossary:'用語集', newMatch:'新しいマッチ',
   roundsLabel:'戦数', rounds:['1戦','2戦','3戦','4戦'],
-  speedLabel:'AIの思考速度', speeds:['最速','普通','ゆっくり'],
+  speedLabel:'速度', speeds:['じっくり','高速'],
   close:'閉じる', pass:'出さない', record:'記録',
   suits:['水','火','地','風'],
-  names:['あなた','ドラキュラ','オオカミ男','フランケン'],
-  short:['私','ドラ','オオ','フラ'],
+  names:['A：あなた','B：ドラキュラ','C：オオカミ男','D：フランケン'],
+  short:['A','B','C','D'],
   dur:{P:'継続',T:'1T'}, flip:'逆転',
+  rowPlant:'布石',
+  prov:'（仮）',
+  sTagline:'勝利条件そのものが動き続けるトリックテイキング',
+  sNote:'<b>AI 3人との4人対戦です。</b>ルール・アートワークとも調整中の試作版で、'
+       +'スート（水・火・地・風）の絵柄や数字も仮のものです。<br>'
+       +'<b>トリックテイキングを遊び慣れた方向け</b>の設計ですが、'
+       +'未経験の方向けの説明も「ルール」に入れてあります。<br>'
+       +'<b>PC・タブレット（横向き）推奨。</b>',
+  sStart:'ゲーム開始',
+  sRules:'先にルールを読む',
+  sLang:'言語',
+  phOk:'確認',
+  phStartT:'第{n}戦 開始',
+  phStartM:'スタートプレイヤーは <b>{p}</b> に決定しました。',
+  phStartS:'スタートプレイヤー（P1）は、この戦のドラフト・布石の起点となり、'
+          +'トリック1で最初にカードを出します。戦ごとに1人ずつ移ります。',
+  phDraftT:'ドラフト',
+  phDraftM:'条件カード12枚から、<b>1枚ずつ順番に</b>取っていきます（各自3枚）。',
+  phDraftS:'手札を見たうえで選びます。全員に公開されます。'
+          +'折り返しながら進む順（スネークドラフト）です。',
+  phDraftR:['1巡目','2巡目','3巡目'],
+  phPlaceT:'布石',
+  phPlaceM:'取った3枚のうち <b>1枚</b> を、1〜15のどのトリックで発動させるか決めて置きます。',
+  phPlaceS:'必ず発動します。残る2枚が手元の応変魔術になります。',
+  phBidT:'ビッド宣言',
+  phBidM:'自分が <b>何トリック勝つか</b> を宣言します。',
+  phBidS:'布石とは逆の順で宣言します。他プレイヤーと同じ数は選べません。',
+  phOrderLbl:'順番',
+  phSkip:'この案内を今後表示しない',
+  narrowWarn:'画面の幅が足りません。PC またはタブレット（横向き）での利用を推奨します。',
   roundsNote4:'4戦：全員が先手（P1）を1回ずつ務めます。',
   roundsNoteN:'4戦（全員が先手を1回ずつ務める）以外は、手番順の有利不利が発生します。',
   lensHigh:'高い方が勝つ', lensLow:'低い方が勝つ', noTrump:'NO TRUMP',
@@ -909,7 +1112,9 @@ ja:{
           <b>これは設計を体験してもらうための試遊版です。</b>タイトルは仮のものです。
           スート（{{s0}}水・{{s1}}火・{{s2}}地・{{s3}}風）の絵柄や数字は仮のもので、
           実際の製品では調整されたデザインになります。
-          カードの枚数・得点・進行はすべて設計中の内容で、今後変わる可能性があります。
+          カードの枚数・得点・進行はすべて設計中の内容で、今後変わる可能性があります。<br>
+          <b>PC・タブレット（横向き）を推奨します。</b>
+          スマートフォンでも動作しますが、画面が狭く操作しづらくなります。
         </div>
 
         <div class="hgoal">
@@ -1117,12 +1322,43 @@ ja:{
 en:{
   title:'ElemenTrick', prov:'(working title)', rules:'Rules', glossary:'Glossary', newMatch:'New Match',
   roundsLabel:'Rounds', rounds:['1 round','2 rounds','3 rounds','4 rounds'],
-  speedLabel:'AI speed', speeds:['Fast','Normal','Slow'],
+  speedLabel:'Speed', speeds:['Deliberate','Fast'],
   close:'Close', pass:'Pass', record:'Log',
   suits:['Aqua','Fire','Earth','Wind'],
-  names:['You','Dracula','Wolfman','Frankenstein'],
-  short:['You','Dra','Wlf','Fra'],
+  names:['A: You','B: Dracula','C: Wolfman','D: Frankenstein'],
+  short:['A','B','C','D'],
   dur:{P:'LAST',T:'1T'}, flip:'FLIP',
+  rowPlant:'Plant',
+  prov:'(working title)',
+  sTagline:'A trick-taking game where the winning conditions keep moving',
+  sNote:'<b>Four-player game against three AI opponents.</b> This is a work-in-progress build — '
+       +'rules and artwork are both still being tuned, and the suit designs '
+       +'(Aqua / Fire / Earth / Wind) are placeholders.<br>'
+       +'<b>Built for players who already know trick-taking well</b>, though a primer '
+       +'is included under Rules.<br>'
+       +'<b>Best on a desktop or tablet in landscape.</b>',
+  sStart:'Start',
+  sRules:'Read the rules first',
+  sLang:'Language',
+  phOk:'OK',
+  phStartT:'Round {n}',
+  phStartM:'<b>{p}</b> is the starting player.',
+  phStartS:'The starting player (P1) anchors the draft and plant order for this round, '
+          +'and leads the first trick. It passes to the next player each round.',
+  phDraftT:'Draft',
+  phDraftM:'Take condition cards from the 12 on offer, <b>one at a time</b> (3 each).',
+  phDraftS:'You choose after seeing your hand, and every pick is public. '
+          +'The order snakes back and forth.',
+  phDraftR:['Pass 1','Pass 2','Pass 3'],
+  phPlaceT:'Plant',
+  phPlaceM:'Commit <b>one</b> of your three cards to a specific trick, 1 through 15.',
+  phPlaceS:'It always fires. The other two become your Reactives.',
+  phBidT:'Bidding',
+  phBidM:'Declare <b>how many tricks you will win</b>.',
+  phBidS:'Bids go in the reverse of the plant order. You cannot take a number someone else has.',
+  phOrderLbl:'Order',
+  phSkip:'Don\'t show these again',
+  narrowWarn:'This screen is narrow. A desktop or a tablet in landscape works much better.',
   roundsNote4:'4 rounds: every player leads off (P1) exactly once.',
   roundsNoteN:'Unless you play 4 rounds (where everyone leads off once), turn order gives some players an edge.',
   lensHigh:'higher wins', lensLow:'lower wins', noTrump:'NO TRUMP',
@@ -1208,7 +1444,9 @@ en:{
           <b>This is a playtest build, made to try out the design.</b> The title is provisional.
           The suit artwork ({{s0}}Aqua, {{s1}}Fire, {{s2}}Earth, {{s3}}Wind) and the numbers
           are placeholders; the finished game will use a refined design.
-          Card counts, scoring and flow are all still being worked on and may change.
+          Card counts, scoring and flow are all still being worked on and may change.<br>
+          <b>Best on a desktop or a tablet in landscape.</b>
+          It runs on a phone, but the screen is too cramped to play comfortably.
         </div>
 
         <div class="hgoal">
@@ -1549,10 +1787,10 @@ function sleep(ms){
     .then(()=> g===GEN ? undefined : NEVER);
 }
 // AI の思考速度（1=最速／2=普通／3.2=ゆっくり）
-let SPD = 2;
+let SPD = 2.6;
 function readSpeed(){
   const el=document.getElementById('speed');
-  SPD = el ? parseFloat(el.value) : 2;
+  SPD = el ? parseFloat(el.value) : 2.6;
 }
 // 思考ラグ：速度係数を掛ける
 const think = ms => sleep(Math.round(ms*SPD));
@@ -1564,6 +1802,7 @@ function newMatch(){
   GEN++;                    // 旧ループを打ち切る
   pending=null;
   clearToasts();
+  const pd=document.getElementById('phasedlg'); if(pd) pd.style.display='none';
   readSpeed();
   const rd=document.getElementById('rounds');
   NDEAL = rd ? parseInt(rd.value,10) : 4;
@@ -1892,6 +2131,14 @@ function aiBid(p){
    戦進行
    ═══════════════════════════════════════════════════════ */
 async function runDeal(){
+  {
+    const t=T(), o=orderFrom(G.p1);
+    await phaseDialog(
+      t.phStartT.replace('{n}', M.deal),
+      t.phStartM.replace('{p}', NAMES[G.p1]),
+      t.phStartS,
+      [{label:t.phOrderLbl, seq:o}]);
+  }
   await doDraft();
   await doPlacement();
   await doBid();
@@ -1911,10 +2158,17 @@ async function runDeal(){
 async function doDraft(){
   G.phase='draft';
   const r1=orderFrom(G.p1);
-  const seq=r1.concat(r1.slice().reverse(),r1);
+  const seq=r1.concat(r1,r1);            // 直列（ルール草案 v2.5 §5）
+  {
+    const t=T();
+    await phaseDialog(t.phDraftT, t.phDraftM, t.phDraftS, [
+      {label:t.phDraftR[0], seq:r1},
+      {label:t.phDraftR[1], seq:r1},
+      {label:t.phDraftR[2], seq:r1}]);
+  }
   G.acts=['','','',''];
   for(const p of seq){
-    G.order = (Math.floor(seq.indexOf(p)/4)%2===0) ? r1 : r1.slice().reverse();
+    G.order = r1;
     G.turn=p; render();
     let c;
     if(p===HUMAN){
@@ -1936,6 +2190,11 @@ async function doDraft(){
 async function doPlacement(){
   G.phase='place';
   logT(T().lPlacePhase);
+  {
+    const t=T();
+    await phaseDialog(t.phPlaceT, t.phPlaceM, t.phPlaceS,
+      [{label:t.phOrderLbl, seq:orderFrom(G.p1)}]);
+  }
   G.order=orderFrom(G.p1); G.acts=['','','',''];
   for(const p of G.order){
     G.turn=p; render();
@@ -1980,6 +2239,10 @@ async function doBid(){
   G.phase='bid';
   logT(T().lBidPhase);
   const ord=orderFrom(G.p1).slice().reverse();   // P4→P1
+  {
+    const t=T();
+    await phaseDialog(t.phBidT, t.phBidM, t.phBidS, [{label:t.phOrderLbl, seq:ord}]);
+  }
   G.order=ord; G.acts=['','','',''];
   for(const p of ord){
     G.turn=p; render();
@@ -2257,27 +2520,49 @@ function render(){
       :`<span style="color:var(${SUIT_VAR[tv]})">${SUIT_SYM[tv]}</span><span class="sub"> ${durLabel(G.trump.holder)}</span>`}</div>
     <div class="sub">T ${['draft','place','bid'].includes(G.phase)?'–':G.trickNo} / 15</div>`;
 
-  // トラック
-  document.getElementById('track').innerHTML=Array.from({length:15},(_,i)=>{
-    const t=i+1;
-    let cls='slot';
+  // ボード（布石行 ＋ プレイヤー4行）
+  {
     const inPlay=!['draft','place','bid'].includes(G.phase);
-    if(inPlay){ if(t<G.trickNo) cls+=' past'; if(t===G.trickNo) cls+=' now'; }
-    const shielded=G.track[t].length>0;
-    const w=G.slotWinner[t]!==undefined?`<div class="win" style="color:${PCOL[G.slotWinner[t]]}">${SHORT[G.slotWinner[t]]}</div>`:'';
-    const chips=G.track[t].map(c=>{
-      const col = c.axis==='R' ? 'var(--verdigris)' : `var(${SUIT_VAR[c.suit]})`;
-      const isP = c.dur==='PERSIST';
-      const st = isP
-        ? `background:${col};color:#101720;border-color:${col};font-weight:700`
-        : `background:rgba(0,0,0,.30);color:${col};border-color:${col}`;
-      const pb = G.placedBy[c.id];
-      const who = pb!==undefined ? `<span style="color:${isP?'#101720':PCOL[pb]}">${SHORT[pb]}</span>` : '';
-      return `<div class="chipline" style="${st}">${condLabel(c)}<span class="du">${durLabel(c)}</span><span class="ow">${who}</span></div>`;
-    }).join('');
-    return `<div class="${cls}" data-slot="${t}"><div class="no">${t}</div>${chips}
-      ${shielded&&G.track[t].length&&inPlay?`<div class="shield">${LANG==='ja'?'護':'L'}</div>`:''}${w}</div>`;
-  }).join('');
+    const rows=[];
+
+    // ── 布石の行
+    rows.push(`<div class="bl">${T().rowPlant}</div>`);
+    for(let t=1;t<=15;t++){
+      let cls='slot';
+      if(inPlay){ if(t<G.trickNo) cls+=' past'; if(t===G.trickNo) cls+=' now'; }
+      const chips=G.track[t].map(c=>{
+        const col = c.axis==='R' ? 'var(--verdigris)' : `var(${SUIT_VAR[c.suit]})`;
+        const isP = c.dur==='PERSIST';
+        const st = isP
+          ? `background:${col};color:#101720;border-color:${col};font-weight:700`
+          : `background:rgba(0,0,0,.30);color:${col};border-color:${col}`;
+        const pb = G.placedBy[c.id];
+        const who = pb!==undefined ? `<span style="color:${isP?'#101720':PCOL[pb]}">${SHORT[pb]}</span>` : '';
+        return `<div class="chipline" style="${st}">${condLabel(c)}<span class="du">${durLabel(c)}</span><span class="ow">${who}</span></div>`;
+      }).join('');
+      const lock = (G.track[t].length && inPlay)
+        ? `<div class="shield">${LANG==='ja'?'護':'L'}</div>` : '';
+      rows.push(`<div class="${cls}" data-slot="${t}"><div class="no">${t}</div>${chips}${lock}</div>`);
+    }
+
+    // ── プレイヤー4行（A=自分, B, C, D）
+    for(let p=0;p<4;p++){
+      const b=G.bids[p], w=G.tricksWon[p];
+      const tile = b===null
+        ? `<span class="bidtile none">–</span>`
+        : `<span class="bidtile ${w===b?'done':(w>b?'over':'')}">${b}</span>`;
+      const isLead = inPlay && p===G.lead;
+      rows.push(`<div class="bl plr" style="border-left-color:${PCOL[p]}${isLead?'':'66'}">
+        <span class="who" style="color:${PCOL[p]}">${'ABCD'[p]}</span>${tile}</div>`);
+      for(let t=1;t<=15;t++){
+        let cls='tk';
+        if(inPlay){ if(t<G.trickNo) cls+=' past'; if(t===G.trickNo) cls+=' now'; }
+        const won = G.slotWinner[t]===p;
+        rows.push(`<div class="${cls}">${won?`<div class="mk" style="background:${PCOL[p]}"></div>`:''}</div>`);
+      }
+    }
+    document.getElementById('board').innerHTML = rows.join('');
+  }
 
   // 座席
   for(let p=0;p<4;p++){
@@ -2290,7 +2575,8 @@ function render(){
       `<span class="bidbadge ${G.tricksWon[p]===b?'done':(G.tricksWon[p]>b?'over':'')}">${G.tricksWon[p]} / ${b}</span>`;
     const plate=`<div class="plate" style="border-color:${PCOL[p]}66">
         ${p===G.p1?'<span class="p1">P1</span>':''}
-        <span class="nm" style="color:${PCOL[p]}">${NAMES[p]}</span>
+        <span class="ab" style="color:${PCOL[p]}">${'ABCD'[p]}</span>
+        <span class="nm" style="color:${PCOL[p]}">${NAMES[p].replace(/^[A-D][：:]\s*/,'')}</span>
         ${bidTag}
         ${G.spent[p]?`<span class="spent">${T().used}</span>`:''}
       </div>
@@ -2306,16 +2592,17 @@ function render(){
       el.innerHTML=plate+`<div class="handrow">${sorted.map(c=>{
         const ok=myTurn&&legalSet.has(c.s*100+c.r);
         const tr=G.trump.value!==null&&c.s===G.trump.value;
-        return `<div class="hcard ${ok?'playable':(myTurn?'illegal':'')}" data-card="${c.s}-${c.r}">${cardSVG(c,56,tr?'tr':'')}</div>`;
+        return `<div class="hcard ${ok?'playable':(myTurn?'illegal':'')}" data-card="${c.s}-${c.r}">${cardSVG(c,52,tr?'tr':'')}</div>`;
       }).join('')}</div>`;
     }else{
-      el.innerHTML=plate+`<div class="backs">${Array.from({length:G.hands[p].length},()=>backSVG(26)).join('')}</div>`;
+      el.innerHTML=plate+`<div class="backs">${Array.from({length:G.hands[p].length},()=>backSVG(23)).join('')}</div>`;
     }
   }
 
   // リアクティブ解決の可視化
   const center=document.getElementById('center');
-  center.querySelectorAll('.offerstrip,.changebanner').forEach(e=>e.remove());
+  document.querySelectorAll('.offerstrip,.changebanner').forEach(e=>e.remove());
+  document.body.dataset.resolve = (G.offerShow && G.offerShow.length) ? '1' : '0';
   if(G.offerShow && G.offerShow.length){
     const st=document.createElement('div');
     st.className='offerstrip';
@@ -2337,14 +2624,10 @@ function render(){
     }).join('') + (G.showClose
       ? `<div class="closewrap"><button class="btn" id="offerCloseBtn">${T().close}</button>
          <span class="hint">Enter</span></div>` : '')
-      + `</div>` + (G.explain ? `<div class="expl">${G.explain}</div>` : '');
-    center.appendChild(st);
-  }
-  if(G.changeBanner){
-    const bn=document.createElement('div');
-    bn.className='changebanner';
-    bn.innerHTML=G.changeBanner;
-    center.appendChild(bn);
+      + `</div>`
+      + (G.changeBanner ? `<div class="changebanner">${G.changeBanner}</div>` : '')
+      + (G.explain ? `<div class="expl">${G.explain}</div>` : '');
+    document.getElementById('table').appendChild(st);
   }
 
   // 出札
@@ -2363,6 +2646,45 @@ function render(){
 }
 
 /* 座席位置に吹き出しを出す。ms 経過後に自動で消える */
+/* フェイズ案内。orders は [{label, seq:[playerIndex,...]}, ...] */
+let SKIP_PHASE = false;
+function phaseDialog(title, msg, sub, orders){
+  if(SKIP_PHASE) return Promise.resolve();
+  return new Promise(res=>{
+    const dlg=document.getElementById('phasedlg');
+    if(!dlg){ res(); return; }
+    document.getElementById('phTitle').innerHTML=title;
+    document.getElementById('phMsg').innerHTML=msg;
+    document.getElementById('phSub').innerHTML=sub||'';
+    const oe=document.getElementById('phOrder');
+    oe.innerHTML=(orders||[]).map(o=>
+      (o.label?`<div class="ph-round">${o.label}</div>`:'')+
+      `<div class="ph-order">`+
+      o.seq.map((p,i)=>
+        `${i?'<span class="arw">→</span>':''}`+
+        `<span class="pchip" style="color:${PCOL[p]};border-color:${PCOL[p]}">${NAMES[p]}</span>`
+      ).join('')+`</div>`
+    ).join('');
+    const btn=document.getElementById('phBtn');
+    btn.textContent=T().phOk;
+    const cb=document.getElementById('phSkip');
+    document.getElementById('phSkipLbl').textContent=T().phSkip;
+    cb.checked=false;
+    dlg.style.display='flex';
+    const g=GEN;
+    const close=()=>{
+      if(cb.checked) SKIP_PHASE=true;
+      dlg.style.display='none';
+      btn.removeEventListener('click',close);
+      document.removeEventListener('keydown',key);
+      if(g===GEN) res();
+    };
+    const key=e=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); close(); } };
+    btn.addEventListener('click',close);
+    document.addEventListener('keydown',key);
+  });
+}
+
 function seatToast(p, action, ms=2000){
   const g=GEN;
   if(p===HUMAN) return Promise.resolve();     // 自分の行動は自明なので出さない
@@ -2515,6 +2837,7 @@ function renderBidPick(done, sum){
    ═══════════════════════════════════════════════════════ */
 document.addEventListener('click',ev=>{
   if(!pending) return;
+  if(startVeil && !startVeil.classList.contains('off')) return;
   if(helpVeil && helpVeil.classList.contains('on')) return;
   if(glossVeil && glossVeil.classList.contains('on')) return;
   const cond=ev.target.closest('.condwrap.sel');
@@ -2575,6 +2898,7 @@ function applyLang(){
   set('helpTitle', t.helpTitle); set('glossTitle', t.glossTitle);
   set('helpclose', t.close); set('glossclose', t.close);
   set('logSummary', t.record);
+  set('narrowWarn', t.narrowWarn);
   const hb=document.getElementById('helpBody');  if(hb) hb.innerHTML=expandGlyphs(t.helpBody);
   const gb=document.getElementById('glossBody'); if(gb) gb.innerHTML=expandGlyphs(t.glossBody);
   const rd=document.getElementById('rounds');
@@ -2582,6 +2906,23 @@ function applyLang(){
   const sp=document.getElementById('speed');
   if(sp) [...sp.options].forEach((o,i)=>o.textContent=t.speeds[i]);
   document.title = t.title + ' ' + t.prov;
+  // 開始画面
+  set('sProv', t.prov);
+  set('sTagline', t.sTagline);
+  const sn=document.getElementById('sNote'); if(sn) sn.innerHTML=t.sNote;
+  set('sLbRounds', t.roundsLabel); set('sLbSpeed', t.speedLabel); set('sLbLang', t.sLang);
+  set('startbtn', t.sStart); set('startrules', t.sRules);
+  const sr=document.getElementById('sRounds');
+  if(sr && !sr.options.length){
+    t.rounds.forEach((v,i)=>sr.add(new Option(v, String(i+1))));
+    sr.value='4';
+  } else if(sr){ [...sr.options].forEach((o,i)=>o.textContent=t.rounds[i]); }
+  const ss=document.getElementById('sSpeed');
+  const spdVals=['2.6','1'];
+  if(ss && !ss.options.length){
+    t.speeds.forEach((v,i)=>ss.add(new Option(v, spdVals[i])));
+    ss.value='2.6';
+  } else if(ss){ [...ss.options].forEach((o,i)=>o.textContent=t.speeds[i]); }
   roundsNote();
   clearToasts();
   if(G){ G.acts=['','','','']; G.log=[]; drawLog(); tick(''); render(); }
@@ -2596,6 +2937,7 @@ function roundsNote(){
   el.innerHTML = n===4
     ? T().roundsNote4 : T().roundsNoteN;
 }
+const startVeil=document.getElementById('startveil');
 const helpVeil=document.getElementById('helpveil');
 const glossVeil=document.getElementById('glossveil');
 document.getElementById('glossbtn').addEventListener('click',()=>glossVeil.classList.add('on'));
@@ -2612,7 +2954,21 @@ document.getElementById('rounds').addEventListener('change',roundsNote);
 document.getElementById('speed').addEventListener('change',readSpeed);
 document.getElementById('newgame').addEventListener('click',newMatch);
 applyLang();
-newMatch();
+
+// 開始画面 → ゲーム開始
+document.getElementById('sLang').addEventListener('change',e=>{
+  LANG=e.target.value;
+  document.getElementById('lang').value=LANG;
+  applyLang();
+});
+document.getElementById('startrules').addEventListener('click',()=>helpVeil.classList.add('on'));
+document.getElementById('startbtn').addEventListener('click',()=>{
+  document.getElementById('rounds').value=document.getElementById('sRounds').value;
+  document.getElementById('speed').value=document.getElementById('sSpeed').value;
+  roundsNote();
+  startVeil.classList.add('off');
+  newMatch();
+});
 
 </script>
 </body>
