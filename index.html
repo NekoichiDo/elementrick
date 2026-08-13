@@ -1009,8 +1009,8 @@ ja:{
   phDraftT:'ドラフト',
   phDraftM:'条件カード12枚から、<b>1枚ずつ順番に</b>取っていきます（各自3枚）。',
   phDraftS:'手札を見たうえで選びます。全員に公開されます。'
-          +'折り返しながら進む順（スネークドラフト）です。',
-  phDraftR:['1巡目','2巡目','3巡目'],
+          +'先手から順に、この並びを3巡します。',
+  phDraftR:[],
   phPlaceT:'布石',
   phPlaceM:'取った3枚のうち <b>1枚</b> を、1〜15のどのトリックで発動させるか決めて置きます。',
   phPlaceS:'必ず発動します。残る2枚が手元の応変魔術になります。',
@@ -1348,8 +1348,8 @@ en:{
   phDraftT:'Draft',
   phDraftM:'Take condition cards from the 12 on offer, <b>one at a time</b> (3 each).',
   phDraftS:'You choose after seeing your hand, and every pick is public. '
-          +'The order snakes back and forth.',
-  phDraftR:['Pass 1','Pass 2','Pass 3'],
+          +'This same order repeats for three passes.',
+  phDraftR:[],
   phPlaceT:'Plant',
   phPlaceM:'Commit <b>one</b> of your three cards to a specific trick, 1 through 15.',
   phPlaceS:'It always fires. The other two become your Reactives.',
@@ -2161,10 +2161,7 @@ async function doDraft(){
   const seq=r1.concat(r1,r1);            // 直列（ルール草案 v2.5 §5）
   {
     const t=T();
-    await phaseDialog(t.phDraftT, t.phDraftM, t.phDraftS, [
-      {label:t.phDraftR[0], seq:r1},
-      {label:t.phDraftR[1], seq:r1},
-      {label:t.phDraftR[2], seq:r1}]);
+    await phaseDialog(t.phDraftT, t.phDraftM, t.phDraftS, [{seq:r1}]);
   }
   G.acts=['','','',''];
   for(const p of seq){
