@@ -360,7 +360,7 @@ dl.gl dd b{color:var(--ink)}
   text-transform:uppercase;margin:0 0 4px;
 }
 .board{
-  display:grid;grid-template-columns:64px repeat(15,1fr);
+  display:grid;grid-template-columns:64px repeat(var(--ntrick,15),1fr);
   gap:2px;font-family:var(--mono);
 }
 /* 行ラベル（左端） */
@@ -887,6 +887,13 @@ body[data-resolve="1"] .lens{
       <div class="snote" id="sNote"></div>
       <div class="srow">
         <div class="sopt">
+          <label id="sLbPlayers"></label>
+          <select id="sPlayers" class="sel-mode">
+            <option value="4">4人</option>
+            <option value="3">3人</option>
+          </select>
+        </div>
+        <div class="sopt">
           <label id="sLbRounds"></label>
           <select id="sRounds" class="sel-mode"></select>
         </div>
@@ -983,6 +990,7 @@ let LANG = 'ja';
 const I18N = {
 ja:{
   title:'ElemenTrick', prov:'（仮）', rules:'ルール', glossary:'用語集', newMatch:'新しいマッチ',
+  playersLabel:'人数', pl4:'4人', pl3:'3人',
   roundsLabel:'戦数', rounds:['1戦','2戦','3戦','4戦'],
   speedLabel:'速度', speeds:['じっくり','高速'],
   close:'閉じる', pass:'出さない', record:'記録',
@@ -1007,7 +1015,7 @@ ja:{
   phStartS:'スタートプレイヤー（P1）は、この戦のドラフト・布石の起点となり、'
           +'トリック1で最初にカードを出します。戦ごとに1人ずつ移ります。',
   phDraftT:'ドラフト',
-  phDraftM:'条件カード12枚から、<b>1枚ずつ順番に</b>取っていきます（各自3枚）。',
+  phDraftM:()=>`条件カード12枚から、<b>1枚ずつ順番に</b>取っていきます（各自${NHELD()}枚）。`,
   phDraftS:'手札を見たうえで選びます。全員に公開されます。'
           +'先手から順に、この並びを3巡します。',
   phDraftR:[],
@@ -1020,8 +1028,8 @@ ja:{
   phOrderLbl:'順番',
   phSkip:'この案内を今後表示しない',
   narrowWarn:'画面の幅が足りません。PC またはタブレット（横向き）での利用を推奨します。',
-  roundsNote4:'4戦：全員が先手（P1）を1回ずつ務めます。',
-  roundsNoteN:'4戦（全員が先手を1回ずつ務める）以外は、手番順の有利不利が発生します。',
+  roundsNote4:()=>`${NPLAYER}戦：全員が先手（P1）を1回ずつ務めます。`,
+  roundsNoteN:()=>`${NPLAYER}戦（全員が先手を1回ずつ務める）以外は、手番順の有利不利が発生します。`,
   lensHigh:'高い方が勝つ', lensLow:'低い方が勝つ', noTrump:'NO TRUMP',
   kanjiHigh:'正', kanjiLow:'逆',
   legendLast:'継続', legend1T:'1T', legendOwner:'末尾の文字＝布石した人',
@@ -1031,7 +1039,7 @@ ja:{
   dealLabel:'DEAL',
   // プロンプト
   qDraft:'条件カードを1枚取ってください',
-  hDraft:n=>`ドラフト ${n}/12 ─ 3枚のうち1枚を布石、2枚を手元に。発動できるのは1枚だけです。`,
+  hDraft:n=>`ドラフト ${n}/12 ─ ${NHELD()}枚のうち1枚を布石、${NHELD()-1}枚を手元に。発動できるのは${MAXFIRE()}枚だけです。`,
   qPlace:'布石するカードを選び、トリックを指定してください',
   hPlace1:'3枚のうち1枚を予約します。残り2枚が手元のリアクティブになります。',
   hPlace2:c=>`「${c}」を置くスロットをトラックから選んでください。`,
@@ -1321,6 +1329,7 @@ ja:{
 },
 en:{
   title:'ElemenTrick', prov:'(working title)', rules:'Rules', glossary:'Glossary', newMatch:'New Match',
+  playersLabel:'Players', pl4:'4 players', pl3:'3 players',
   roundsLabel:'Rounds', rounds:['1 round','2 rounds','3 rounds','4 rounds'],
   speedLabel:'Speed', speeds:['Deliberate','Fast'],
   close:'Close', pass:'Pass', record:'Log',
@@ -1346,7 +1355,7 @@ en:{
   phStartS:'The starting player (P1) anchors the draft and plant order for this round, '
           +'and leads the first trick. It passes to the next player each round.',
   phDraftT:'Draft',
-  phDraftM:'Take condition cards from the 12 on offer, <b>one at a time</b> (3 each).',
+  phDraftM:()=>`Take condition cards from the 12 on offer, <b>one at a time</b> (${NHELD()} each).`,
   phDraftS:'You choose after seeing your hand, and every pick is public. '
           +'This same order repeats for three passes.',
   phDraftR:[],
@@ -1359,8 +1368,8 @@ en:{
   phOrderLbl:'Order',
   phSkip:'Don\'t show these again',
   narrowWarn:'This screen is narrow. A desktop or a tablet in landscape works much better.',
-  roundsNote4:'4 rounds: every player leads off (P1) exactly once.',
-  roundsNoteN:'Unless you play 4 rounds (where everyone leads off once), turn order gives some players an edge.',
+  roundsNote4:()=>`${NPLAYER} rounds: every player leads off (P1) exactly once.`,
+  roundsNoteN:()=>`Unless you play ${NPLAYER} rounds (where everyone leads off once), turn order gives some players an edge.`,
   lensHigh:'higher wins', lensLow:'lower wins', noTrump:'NO TRUMP',
   kanjiHigh:'HIGH', kanjiLow:'LOW',
   legendLast:'LAST', legend1T:'1T', legendOwner:'trailing letters = who planted it',
@@ -1369,7 +1378,7 @@ en:{
   tagP1:'P1', tagLead:'LEAD', tagTurn:'TURN', used:'used', thinking:'thinking…',
   dealLabel:'ROUND',
   qDraft:'Take one condition card',
-  hDraft:n=>`Draft ${n}/12 — plant one of your three, keep two in hand. Only one of those two will ever fire.`,
+  hDraft:n=>`Draft ${n}/12 — plant one of your ${NHELD()}, keep ${NHELD()-1} in hand. Only ${MAXFIRE()} of those will ever fire.`,
   qPlace:'Choose a card to plant, then pick a trick',
   hPlace1:'Commit one of your three to a trick. The other two become your Reactives.',
   hPlace2:c=>`Pick a slot on the track for "${c}".`,
@@ -1658,10 +1667,22 @@ const T = () => I18N[LANG];
 const SUIT_SYM_ = () => T().suits;
 let SUIT_SYM = ['水','火','地','風'];
 const SUIT_VAR = ['--s0','--s1','--s2','--s3'];
-const NRANK = 15;
+let NPLAYER = 4;                  // 人数（3 or 4）
+let NRANK = 15;                   // 理力の最大値
+let NTRICK = 15;                  // トリック数＝手札枚数
+function applyPlayers(n){
+  NPLAYER = n;
+  if(n===3){ NRANK=12; NTRICK=16; }
+  else     { NRANK=15; NTRICK=15; }
+}
+const MAXFIRE = ()=> (NPLAYER===3 ? 2 : 1);   // 応変魔術を撃てる回数
+const NHELD   = ()=> (12/NPLAYER);            // ドラフトで取る枚数（4人=3 / 3人=4）
 const HUMAN = 0;
 let NAMES = I18N.ja.names.slice();
-const POS   = ['s','w','n','e'];                 // 席：下→左→上→右（時計回り）
+// 席：下→左→上→右（時計回り）。3人戦は西を空け、下→上→右に配置する
+const POS_4 = ['s','w','n','e'];
+const POS_3 = ['s','n','e'];
+const POS   = new Proxy({},{ get:(_,k)=> (NPLAYER===3?POS_3:POS_4)[k] });
 const SEAT_EL = {s:'seatS', w:'seatW', n:'seatN', e:'seatE'};
 let SHORT = I18N.ja.short.slice();
 const PCOL  = ['var(--p0)','var(--p1)','var(--p2)','var(--p3)'];
@@ -1756,10 +1777,13 @@ function miniChip(c){
    得点表（ルール草案 v2.0 §10）
    ═══════════════════════════════════════════════════════ */
 // [ぴったり, ±1, ±2]　※±3以上は0点
+const SCORE_3 = {0:[13,10,2],1:[11,8,2],2:[9,6,2],3:[7,4,1],4:[6,3,1],5:[5,2,1],
+                 6:[5,2,1],7:[6,3,1],8:[6,3,1],9:[7,4,1],10:[8,5,2],11:[9,6,2],12:[10,7,2]};
 const SCORE_T = {0:[10,7,2],1:[8,5,2],2:[6,3,1],3:[5,2,1],4:[5,2,1],
                  5:[6,3,1],6:[6,3,1],7:[7,4,2],8:[8,5,2],9:[9,6,2]};
 function scoreOf(bid, won){
-  const t = bid>=10 ? [10,7,2] : SCORE_T[bid];
+  const t = (NPLAYER===3) ? (bid>=12 ? SCORE_3[12] : SCORE_3[bid])
+                          : (bid>=10 ? [10,7,2]    : SCORE_T[bid]);
   const d = Math.abs(bid-won);
   return d===0 ? t[0] : d===1 ? t[1] : d===2 ? t[2] : 0;
 }
@@ -1794,8 +1818,11 @@ function readSpeed(){
 }
 // 思考ラグ：速度係数を掛ける
 const think = ms => sleep(Math.round(ms*SPD));
-const nx=(p,k)=>(p+k)%4;
-const orderFrom=p=>[p,nx(p,1),nx(p,2),nx(p,3)];
+const nx=(p,k)=>(p+k)%NPLAYER;
+const orderFrom=p=>Array.from({length:NPLAYER},(_,k)=>nx(p,k));
+const allP=()=>Array.from({length:NPLAYER},(_,i)=>i);
+const zerosP=()=>new Array(NPLAYER).fill(0);
+const nullsP=()=>new Array(NPLAYER).fill(null);
 function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
 
 function newMatch(){
@@ -1804,9 +1831,12 @@ function newMatch(){
   clearToasts();
   const pd=document.getElementById('phasedlg'); if(pd) pd.style.display='none';
   readSpeed();
+  const pl=document.getElementById('sPlayers');
+  applyPlayers(pl ? parseInt(pl.value,10) : NPLAYER);
   const rd=document.getElementById('rounds');
-  NDEAL = rd ? parseInt(rd.value,10) : 4;
-  M = { deal:1, p1:Math.floor(Math.random()*4), total:[0,0,0,0], rows:[] };
+  NDEAL = rd ? parseInt(rd.value,10) : NPLAYER;
+  if(NDEAL>NPLAYER) NDEAL=NPLAYER;
+  M = { deal:1, p1:Math.floor(Math.random()*NPLAYER), total:zerosP(), rows:[] };
   document.getElementById('resultHost').innerHTML='';
   startDeal();
 }
@@ -1817,18 +1847,18 @@ function startDeal(){
   G = {
     phase:'draft',
     p1: M.p1, lead: M.p1, trickNo: 1,
-    hands:[deck.slice(0,15),deck.slice(15,30),deck.slice(30,45),deck.slice(45,60)],
+    hands: allP().map(i=>deck.slice(i*NTRICK,(i+1)*NTRICK)),
     pool: CONDS.slice().sort((a,b)=>a.id-b.id),
-    held:[[],[],[],[]],
-    track:Array.from({length:16},()=>[]),
-    reserve:[[],[],[],[]],
-    spent:[false,false,false,false],
-    bids:[null,null,null,null],
+    held: allP().map(()=>[]),
+    track:Array.from({length:NTRICK+1},()=>[]),
+    reserve: allP().map(()=>[]),
+    spent: zerosP(),
+    bids: nullsP(),
     rank:{value:'N',holder:null,dur:null},
     trump:{value:null,holder:null,dur:null},
-    tricksWon:[0,0,0,0],
+    tricksWon: zerosP(),
     placedBy:{}, offerShow:null, changeBanner:null, showClose:false, explain:null,
-    order:[], turn:null, acts:['','','',''],
+    order:[], turn:null, acts: allP().map(()=>''),
     played:[], trickCards:[], slotWinner:{},
     winnerThisTrick:null,
     log:[]
@@ -1918,7 +1948,7 @@ function aiPlay(p){
   const legal=legalMoves(G.hands[p],leadSuit);
   if(legal.length===1) return legal[0];
   const uns=unseenFor(p);
-  const remain=3-G.trickCards.length;
+  const remain=NPLAYER-1-G.trickCards.length;
   const rv=G.rank.value, tv=G.trump.value;
   const wantWin = G.bids[p]===null ? true : (G.tricksWon[p] < G.bids[p]);
 
@@ -1942,7 +1972,7 @@ function aiPlay(p){
    AI：リアクティブ（宣言＋妨害）
    ═══════════════════════════════════════════════════════ */
 function aiOffer(p){
-  if(G.spent[p]) return null;
+  if(G.spent[p]>=MAXFIRE()) return null;
   const res=G.reserve[p].filter(c=>!blockedAxis(c.axis,G.trickNo));
   if(!res.length) return null;
   const uns=unseenFor(p);
@@ -1958,7 +1988,7 @@ function aiOffer(p){
 
   // 他家の切迫度
   const vuln=[0,0,0,0], nq=[0,0,0,0], onTrack=[0,0,0,0];
-  for(let q=0;q<4;q++){
+  for(let q=0;q<NPLAYER;q++){
     if(q===p||G.bids[q]===null) continue;
     nq[q]=G.bids[q]-G.tricksWon[q];
     if(nq[q]<0) vuln[q]=1;
@@ -1966,7 +1996,7 @@ function aiOffer(p){
       const sl=Math.min(nq[q],remainT-nq[q]);
       vuln[q]=1-Math.min(1,sl/Math.max(1,remainT/2));
     }
-    onTrack[q]=G.tricksWon[q]-G.bids[q]*(G.trickNo-1)/15;
+    onTrack[q]=G.tricksWon[q]-G.bids[q]*(G.trickNo-1)/NTRICK;
   }
 
   let best=null,bg=-1;
@@ -1979,7 +2009,7 @@ function aiOffer(p){
 
     // 妨害
     let sab=0;
-    for(let q=0;q<4;q++){
+    for(let q=0;q<NPLAYER;q++){
       if(q===p||G.bids[q]===null) continue;
       if(c.axis==='T'){
         if(G.voids && G.voids[q][c.suit]) sab += (nq[q]>0? 0.55 : -0.55);
@@ -2030,7 +2060,7 @@ function aiPlace(p){
   const lo=pick.dur==='PERSIST'?5:9, hi=pick.dur==='PERSIST'?11:14;
   const cands=[];
   for(let t=lo;t<=hi;t++) if(!G.track[t].some(x=>x.axis===pick.axis)) cands.push(t);
-  if(!cands.length) for(let t=1;t<=15;t++) if(!G.track[t].some(x=>x.axis===pick.axis)) cands.push(t);
+  if(!cands.length) for(let t=1;t<=NTRICK;t++) if(!G.track[t].some(x=>x.axis===pick.axis)) cands.push(t);
   return {card:pick, slot:cands[Math.floor(Math.random()*cands.length)]};
 }
 
@@ -2063,16 +2093,16 @@ function rollout(me, myHand, bidsIn, samples){
     const k=s*100+r; if(!mine.has(k)) pool0.push({s,r});
   }
   const placed=[];
-  for(let t=1;t<=15;t++) for(const c of G.track[t]) placed.push({t,c});
-  const reserveAll=[0,1,2,3].map(q=>G.reserve[q].slice());
+  for(let t=1;t<=NTRICK;t++) for(const c of G.track[t]) placed.push({t,c});
+  const reserveAll=allP().map(q=>G.reserve[q].slice());
   const out=[];
   for(let it=0;it<samples;it++){
     const pool=shuffle(pool0.slice());
     const hands=[null,null,null,null]; hands[me]=myHand.slice();
-    let i=0; for(let q=0;q<4;q++) if(q!==me){ hands[q]=pool.slice(i,i+15); i+=15; }
+    let i=0; for(let q=0;q<NPLAYER;q++) if(q!==me){ hands[q]=pool.slice(i,i+NTRICK); i+=NTRICK; }
     // リアクティブは各自1枚をランダムなトリックで発動すると仮定
     const fire={};
-    for(let q=0;q<4;q++){
+    for(let q=0;q<NPLAYER;q++){
       if(!reserveAll[q].length) continue;
       const c=reserveAll[q][Math.floor(Math.random()*reserveAll[q].length)];
       const t=1+Math.floor(Math.random()*15);
@@ -2080,7 +2110,7 @@ function rollout(me, myHand, bidsIn, samples){
     }
     let rv='N', tv=null, rd=null, td=null, lead=G.lead;
     const won=[0,0,0,0];
-    for(let t=1;t<=15;t++){
+    for(let t=1;t<=NTRICK;t++){
       // 条件適用（布石優先＝D-2、同軸のリアクティブは無効）
       const usedAx={};
       for(const {t:tt,c} of placed) if(tt===t){ usedAx[c.axis]=1;
@@ -2106,14 +2136,41 @@ function rollout(me, myHand, bidsIn, samples){
   return out;
 }
 function takenBids(){
-  return new Set([0,1,2,3].filter(q=>G.bids[q]!==null).map(q=>G.bids[q]));
+  return new Set(allP().filter(q=>G.bids[q]!==null).map(q=>G.bids[q]));
 }
+/* ══ 逃げ道の見極め（低い宣言の実現可能性）══
+   ロールアウトは「降りる＝常に最弱を出せる」と仮定するため、
+   低い宣言の成功率を過大評価する。実際にはフォロー義務があり、
+   ・ヴォイドを作れるスートがあるか（高ランク札を無害に捨てられるか）
+   ・長いスートに高ランク札を抱えていないか
+   で「避けられない取得数」が決まる。手札からそれを見積もる。 */
+function forcedFloor(hand){
+  const avg = NRANK/4;
+  let floor=0, shed=0;
+  for(let sx=0;sx<4;sx++){
+    const cs=hand.filter(c=>c.s===sx);
+    const n=cs.length;
+    if(n===0){ shed+=2.0; continue; }
+    if(n<=2)  shed+=1.0;
+    else if(n<=3) shed+=0.4;
+    for(const c of cs){
+      const above=NRANK-c.r;
+      const myAbove=cs.filter(x=>x.r>c.r).length;
+      const oppAbove=Math.max(0,above-myAbove);
+      floor += Math.pow(Math.max(0,1-oppAbove/Math.max(1,NRANK*0.55)),2);
+    }
+    if(n>avg) floor += (n-avg)*0.35;
+  }
+  return Math.max(0, floor - shed*0.55);
+}
+
 function aiBid(p){
   const S=10;
   const taken=takenBids();
   const rough = rollout(p, G.hands[p], G.bids.slice(), 6);
   const mean = rough.reduce((a,b)=>a+b,0)/rough.length;
-  const hi = Math.min(15, Math.round(mean)+6);
+  const hi = Math.min(NTRICK, Math.round(mean)+6);
+  const floor=forcedFloor(G.hands[p]);         // 避けられない取得数の見積り
   let bb=null, be=-1e9;
   for(let b=0;b<=hi;b++){
     if(taken.has(b)) continue;                 // 排他ビッド
@@ -2121,9 +2178,14 @@ function aiBid(p){
     const r=rollout(p, G.hands[p], trial, S);
     let ev=0; for(const w of r) ev+=scoreOf(b,w);
     ev/=r.length;
+    // 逃げ道のない手札で低く宣言することを抑える
+    if(b < floor){
+      const gap=floor-b;
+      ev *= Math.max(0.15, 1 - gap*0.22);
+    }
     if(ev>be){ be=ev; bb=b; }
   }
-  if(bb===null) for(let b=0;b<=15;b++) if(!taken.has(b)){ bb=b; break; }
+  if(bb===null) for(let b=0;b<=NTRICK;b++) if(!taken.has(b)){ bb=b; break; }
   return bb;
 }
 
@@ -2143,7 +2205,7 @@ async function runDeal(){
   await doPlacement();
   await doBid();
   G.voids=[[0,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,0]];
-  for(let t=1;t<=15;t++){
+  for(let t=1;t<=NTRICK;t++){
     G.trickNo=t; render();
     await doReactive();
     await doPlay();
@@ -2158,12 +2220,13 @@ async function runDeal(){
 async function doDraft(){
   G.phase='draft';
   const r1=orderFrom(G.p1);
-  const seq=r1.concat(r1,r1);            // 直列（ルール草案 v2.5 §5）
+  let seq=[];                            // 直列（ルール草案 v2.5 §5）
+  for(let k=0;k<NHELD();k++) seq=seq.concat(r1);   // 4人=3巡 / 3人=4巡
   {
     const t=T();
-    await phaseDialog(t.phDraftT, t.phDraftM, t.phDraftS, [{seq:r1}]);
+    await phaseDialog(t.phDraftT, (typeof t.phDraftM==='function'?t.phDraftM():t.phDraftM), t.phDraftS, [{seq:r1}]);
   }
-  G.acts=['','','',''];
+  G.acts=allP().map(()=>'');
   for(const p of seq){
     G.order = r1;
     G.turn=p; render();
@@ -2181,7 +2244,7 @@ async function doDraft(){
     G.turn=null; render();
     await seatToast(p, T().tGot(condName(c)), 900);
   }
-  clearToasts(); G.turn=null; G.acts=['','','',''];
+  clearToasts(); G.turn=null; G.acts=allP().map(()=>'');
 }
 
 async function doPlacement(){
@@ -2192,7 +2255,7 @@ async function doPlacement(){
     await phaseDialog(t.phPlaceT, t.phPlaceM, t.phPlaceS,
       [{label:t.phOrderLbl, seq:orderFrom(G.p1)}]);
   }
-  G.order=orderFrom(G.p1); G.acts=['','','',''];
+  G.order=orderFrom(G.p1); G.acts=allP().map(()=>'');
   for(const p of G.order){
     G.turn=p; render();
     if(p===HUMAN){
@@ -2240,7 +2303,7 @@ async function doBid(){
     const t=T();
     await phaseDialog(t.phBidT, t.phBidM, t.phBidS, [{label:t.phOrderLbl, seq:ord}]);
   }
-  G.order=ord; G.acts=['','','',''];
+  G.order=ord; G.acts=allP().map(()=>'');
   for(const p of ord){
     G.turn=p; render();
     if(p===HUMAN){
@@ -2271,7 +2334,7 @@ async function doReactive(){
   G.phase='reactive';
   logT(T().lTrick(G.trickNo, NAMES[G.lead]));
   const offers={};
-  for(let p=0;p<4;p++) if(p!==HUMAN){const c=aiOffer(p); if(c)offers[p]=c;}
+  for(let p=0;p<NPLAYER;p++) if(p!==HUMAN){const c=aiOffer(p); if(c)offers[p]=c;}
 
   const open=G.reserve[HUMAN].filter(c=>!blockedAxis(c.axis,G.trickNo));
   if(!G.spent[HUMAN]&&open.length){
@@ -2286,7 +2349,7 @@ async function doReactive(){
   const placedHere = G.track[G.trickNo].slice();
   const offerList  = orderFrom(G.lead).filter(p=>offers[p]).map(p=>({p,card:offers[p]}));
   G.order=orderFrom(G.lead); G.turn=null;
-  G.acts=['','','',''];
+  G.acts=allP().map(()=>'');
   for(const {p,card:c} of offerList) G.acts[p]=T().aOffer(condName(c));
 
   // 何も起きないトリックは素通り
@@ -2322,7 +2385,7 @@ async function doReactive(){
     if(!(c.axis in claimed)){
       claimed[c.axis]=c;
       G.reserve[p]=G.reserve[p].filter(x=>x.id!==c.id);
-      G.spent[p]=true;
+      G.spent[p]=(G.spent[p]||0)+1;
       if(item) item.st='win';
       G.acts[p]=T().aFired(condName(c));
       log(T().lFire(NAMES[p], condName(c)),'ev');
@@ -2397,7 +2460,7 @@ async function doReactive(){
 async function doPlay(){
   G.phase='play';
   G.trickCards=[];
-  G.order=orderFrom(G.lead); G.acts=['','','',''];
+  G.order=orderFrom(G.lead); G.acts=allP().map(()=>'');
   for(const p of G.order){
     G.turn=p; render();
     let card;
@@ -2442,10 +2505,10 @@ async function doResolve(){
    ═══════════════════════════════════════════════════════ */
 function endDeal(){
   G.phase='dealend';
-  const gains=[0,1,2,3].map(p=>scoreOf(G.bids[p],G.tricksWon[p]));
-  for(let p=0;p<4;p++) M.total[p]+=gains[p];
+  const gains=allP().map(p=>scoreOf(G.bids[p],G.tricksWon[p]));
+  for(let p=0;p<NPLAYER;p++) M.total[p]+=gains[p];
   M.rows.push({deal:M.deal, bids:G.bids.slice(), won:G.tricksWon.slice(), gains});
-  logT(T().lDealEnd(M.deal, [0,1,2,3].map(p=>`${NAMES[p]} ${G.bids[p]}→${G.tricksWon[p]} (+${gains[p]})`).join('　')));
+  logT(T().lDealEnd(M.deal, allP().map(p=>`${NAMES[p]} ${G.bids[p]}→${G.tricksWon[p]} (+${gains[p]})`).join('　')));
 
   const last = M.deal>=NDEAL;
   document.getElementById('resultHost').innerHTML=`
@@ -2453,7 +2516,7 @@ function endDeal(){
       <h2>${last?T().rMatchEnd:T().rDealEnd(M.deal)}</h2>
       <table style="width:100%;font-family:var(--mono);font-size:12.5px;border-collapse:collapse">
         <tr style="color:var(--dim)"><th style="text-align:left">　</th><th>${T().rBid}</th><th>${T().rWon}</th><th>${T().rDiff}</th><th>${T().rScore}</th><th>${T().rTotal}</th></tr>
-        ${[0,1,2,3].map(p=>`<tr style="border-top:1px solid #33455A">
+        ${allP().map(p=>`<tr style="border-top:1px solid #33455A">
           <td style="text-align:left;padding:4px 0">${NAMES[p]}</td>
           <td style="text-align:center">${G.bids[p]}</td>
           <td style="text-align:center">${G.tricksWon[p]}</td>
@@ -2462,7 +2525,7 @@ function endDeal(){
           <td style="text-align:center">${M.total[p]}</td></tr>`).join('')}
       </table>
       ${last?`<div style="margin-top:12px;font-family:var(--mincho);font-size:17px;letter-spacing:.1em">
-        ${(()=>{const m=Math.max(...M.total);const w=[0,1,2,3].filter(p=>M.total[p]===m);
+        ${(()=>{const m=Math.max(...M.total);const w=allP().filter(p=>M.total[p]===m);
         return T().rWinner(w.length>1?w.map(p=>NAMES[p]).join('・')+T().rDraw:NAMES[w[0]]);})()}</div>`:''}
       <div style="margin-top:16px">
         <button class="btn primary" id="nextBtn">${last?T().btnNewMatch:T().btnNext}</button>
@@ -2524,7 +2587,7 @@ function render(){
 
     // ── 布石の行
     rows.push(`<div class="bl">${T().rowPlant}</div>`);
-    for(let t=1;t<=15;t++){
+    for(let t=1;t<=NTRICK;t++){
       let cls='slot';
       if(inPlay){ if(t<G.trickNo) cls+=' past'; if(t===G.trickNo) cls+=' now'; }
       const chips=G.track[t].map(c=>{
@@ -2543,7 +2606,7 @@ function render(){
     }
 
     // ── プレイヤー4行（A=自分, B, C, D）
-    for(let p=0;p<4;p++){
+    for(let p=0;p<NPLAYER;p++){
       const b=G.bids[p], w=G.tricksWon[p];
       const tile = b===null
         ? `<span class="bidtile none">–</span>`
@@ -2551,18 +2614,27 @@ function render(){
       const isLead = inPlay && p===G.lead;
       rows.push(`<div class="bl plr" style="border-left-color:${PCOL[p]}${isLead?'':'66'}">
         <span class="who" style="color:${PCOL[p]}">${'ABCD'[p]}</span>${tile}</div>`);
-      for(let t=1;t<=15;t++){
+      for(let t=1;t<=NTRICK;t++){
         let cls='tk';
         if(inPlay){ if(t<G.trickNo) cls+=' past'; if(t===G.trickNo) cls+=' now'; }
         const won = G.slotWinner[t]===p;
         rows.push(`<div class="${cls}">${won?`<div class="mk" style="background:${PCOL[p]}"></div>`:''}</div>`);
       }
     }
-    document.getElementById('board').innerHTML = rows.join('');
+    const bd=document.getElementById('board');
+    bd.style.setProperty('--ntrick', String(NTRICK));
+    bd.innerHTML = rows.join('');
   }
 
-  // 座席
-  for(let p=0;p<4;p++){
+  // 座席（3人戦では使わない席を空にする）
+  {
+    const used=new Set(allP().map(i=>POS[i]));
+    for(const k of ['s','w','n','e']) if(!used.has(k)){
+      const e=document.getElementById(SEAT_EL[k]);
+      if(e){ e.innerHTML=''; e.className='seat seat-'+k+' empty'; }
+    }
+  }
+  for(let p=0;p<NPLAYER;p++){
     const pos=POS[p], el=document.getElementById(SEAT_EL[pos]);
     const isLead=p===G.lead&&!['draft','place','bid'].includes(G.phase);
     el.className='seat seat-'+pos+(isLead?' lead':'');
@@ -2743,15 +2815,16 @@ function renderRoster(){
 function renderPayTable(){
   const el=document.getElementById('paytable');
   if(!el) return;
-  const taken = G.bids ? new Set([0,1,2,3].filter(q=>G.bids[q]!==null).map(q=>G.bids[q])) : new Set();
+  const taken = G.bids ? new Set(allP().filter(q=>G.bids[q]!==null).map(q=>G.bids[q])) : new Set();
   const mine  = G.bids ? G.bids[HUMAN] : null;
   const cols=[];
-  for(let b=0;b<=9;b++){
-    const t=SCORE_T[b];
-    const lbl = b===9 ? '9+' : String(b);
-    const cls = (mine!==null&&(b===mine||(b===9&&mine>=9))) ? 'mine'
+  const CAP = (NPLAYER===3) ? 12 : 9;                 // 一律扱いを始める宣言値
+  for(let b=0;b<=CAP;b++){
+    const t = (NPLAYER===3) ? SCORE_3[b] : SCORE_T[b];
+    const lbl = b===CAP ? (CAP+'+') : String(b);
+    const cls = (mine!==null&&(b===mine||(b===CAP&&mine>=CAP))) ? 'mine'
               : (taken.has(b) ? 'taken' : '');
-    const owner = G.bids ? [0,1,2,3].filter(q=>G.bids[q]===b || (b===9&&G.bids[q]>=9)) : [];
+    const owner = G.bids ? allP().filter(q=>G.bids[q]===b || (b===CAP&&G.bids[q]>=CAP)) : [];
     const who = owner.map(q=>`<span style="color:${PCOL[q]}">${SHORT[q]}</span>`).join(' ');
     cols.push(`<div class="ptcol ${cls}">
       <div class="b">${lbl}</div>
@@ -2818,7 +2891,7 @@ function renderBidPick(done, sum){
   const note = done.length
     ? T().bidTaken(done.map(q=>NAMES[q]+' '+G.bids[q]).join('　'), sum)
     : T().bidFirst;
-  const sc=b=>(b>=10?[10,7,2]:SCORE_T[b]);
+  const sc=b=>(NPLAYER===3 ? (b>=12?SCORE_3[12]:SCORE_3[b]) : (b>=10?[10,7,2]:SCORE_T[b]));
   document.getElementById('prow').innerHTML=
     `<div style="width:100%"><div class="bidnote">${note}</div>
      <div class="bidbtns">${Array.from({length:16},(_,i)=>{
@@ -2907,13 +2980,9 @@ function applyLang(){
   set('sProv', t.prov);
   set('sTagline', t.sTagline);
   const sn=document.getElementById('sNote'); if(sn) sn.innerHTML=t.sNote;
-  set('sLbRounds', t.roundsLabel); set('sLbSpeed', t.speedLabel); set('sLbLang', t.sLang);
+  set('sLbPlayers', t.playersLabel); set('sLbRounds', t.roundsLabel); set('sLbSpeed', t.speedLabel); set('sLbLang', t.sLang);
   set('startbtn', t.sStart); set('startrules', t.sRules);
-  const sr=document.getElementById('sRounds');
-  if(sr && !sr.options.length){
-    t.rounds.forEach((v,i)=>sr.add(new Option(v, String(i+1))));
-    sr.value='4';
-  } else if(sr){ [...sr.options].forEach((o,i)=>o.textContent=t.rounds[i]); }
+  buildRounds();
   const ss=document.getElementById('sSpeed');
   const spdVals=['2.6','1'];
   if(ss && !ss.options.length){
@@ -2922,7 +2991,7 @@ function applyLang(){
   } else if(ss){ [...ss.options].forEach((o,i)=>o.textContent=t.speeds[i]); }
   roundsNote();
   clearToasts();
-  if(G){ G.acts=['','','','']; G.log=[]; drawLog(); tick(''); render(); }
+  if(G){ G.acts=allP().map(()=>''); G.log=[]; drawLog(); tick(''); render(); }
   if(PROMPT_REDRAW) PROMPT_REDRAW();
 }
 
@@ -2931,8 +3000,10 @@ function roundsNote(){
   const rd=document.getElementById('rounds');
   if(!el||!rd) return;
   const n=parseInt(rd.value,10);
-  el.innerHTML = n===4
-    ? T().roundsNote4 : T().roundsNoteN;
+  const sp=document.getElementById('sPlayers');
+  const np=sp?parseInt(sp.value,10):NPLAYER;
+  const f = (n===np) ? T().roundsNote4 : T().roundsNoteN;
+  el.innerHTML = (typeof f==='function') ? f() : f;
 }
 const startVeil=document.getElementById('startveil');
 const helpVeil=document.getElementById('helpveil');
@@ -2958,8 +3029,23 @@ document.getElementById('sLang').addEventListener('change',e=>{
   document.getElementById('lang').value=LANG;
   applyLang();
 });
+function buildRounds(){
+  const t=T();
+  const sp=document.getElementById('sPlayers');
+  const n = sp ? parseInt(sp.value,10) : 4;
+  const sr=document.getElementById('sRounds');
+  if(!sr) return;
+  const cur=sr.value;
+  sr.innerHTML='';
+  for(let i=1;i<=n;i++) sr.add(new Option(t.rounds[i-1], String(i)));
+  sr.value = (cur && parseInt(cur,10)<=n) ? cur : String(n);
+  // 人数セレクタの表記も言語に合わせる
+  if(sp){ sp.options[0].textContent=t.pl4; sp.options[1].textContent=t.pl3; }
+}
+document.getElementById('sPlayers').addEventListener('change',()=>{ buildRounds(); });
 document.getElementById('startrules').addEventListener('click',()=>helpVeil.classList.add('on'));
 document.getElementById('startbtn').addEventListener('click',()=>{
+  applyPlayers(parseInt(document.getElementById('sPlayers').value,10));
   document.getElementById('rounds').value=document.getElementById('sRounds').value;
   document.getElementById('speed').value=document.getElementById('sSpeed').value;
   roundsNote();
