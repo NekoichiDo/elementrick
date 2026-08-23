@@ -148,6 +148,29 @@ button:focus-visible,[tabindex]:focus-visible{outline:2px solid var(--ivory);out
   background:radial-gradient(ellipse 90% 70% at 50% 40%, #2B3F57 0%, #1B2836 55%, #0E141C 100%);
 }
 .startveil.off{display:none}
+.snames{margin:14px auto 4px;max-width:460px;text-align:left}
+.snames>summary{
+  cursor:pointer;font-size:12px;color:var(--muted);
+  list-style:none;padding:6px 2px;user-select:none;
+}
+.snames>summary::-webkit-details-marker{display:none}
+.snames>summary::before{content:'▸ ';color:var(--brass)}
+.snames[open]>summary::before{content:'▾ '}
+.snames>summary:hover{color:var(--ink)}
+.snamerow{display:flex;flex-direction:column;gap:6px;padding:6px 2px 2px}
+.snamerow .nmline{display:flex;align-items:center;gap:8px}
+.snamerow .nmtag{
+  width:20px;height:20px;flex:0 0 20px;border-radius:3px;
+  display:flex;align-items:center;justify-content:center;
+  font:700 11px/1 var(--mono);color:#101720;
+}
+.snamerow input{
+  flex:1;min-width:0;background:rgba(12,18,26,.6);
+  border:1px solid var(--dim);border-radius:4px;
+  color:var(--ink);font-size:13px;padding:5px 8px;
+}
+.snamerow input:focus{outline:none;border-color:var(--brass)}
+.snamehint{font-size:11px;color:var(--dim);padding:4px 2px 0}
 .startbox{
   max-width:520px;width:100%;text-align:center;
 }
@@ -909,6 +932,11 @@ body[data-resolve="1"] .lens{
           </select>
         </div>
       </div>
+      <details class="snames" id="sNames">
+        <summary id="sNamesSum"></summary>
+        <div class="snamerow" id="sNameRow"></div>
+        <div class="snamehint" id="sNameHint"></div>
+      </details>
       <div class="sbtns">
         <button class="btn primary big" id="startbtn"></button>
         <button class="btn" id="startrules"></button>
@@ -996,6 +1024,9 @@ ja:{
   close:'閉じる', pass:'出さない', record:'記録',
   suits:['水','火','地','風'],
   names:['A：あなた','B：ドラキュラ','C：オオカミ男','D：フランケン'],
+  nmSum:'プレイヤー名を変更する',
+  nmHint:'空欄のままなら既定の名前を使います。',
+  nmYou:'あなた',
   short:['A','B','C','D'],
   dur:{P:'継続',T:'1T'}, flip:'逆転',
   rowPlant:'布石',
@@ -1008,7 +1039,7 @@ ja:{
        +'<b>PC・タブレット（横向き）推奨。</b>',
   sStart:'ゲーム開始',
   sRules:'先にルールを読む',
-  sLang:'言語',
+  sLang:'言語 / Language',
   phOk:'確認',
   phStartT:'第{n}戦 開始',
   phStartM:'スタートプレイヤーは <b>{p}</b> に決定しました。',
@@ -1335,6 +1366,9 @@ en:{
   close:'Close', pass:'Pass', record:'Log',
   suits:['Aqua','Fire','Earth','Wind'],
   names:['A: You','B: Dracula','C: Wolfman','D: Frankenstein'],
+  nmSum:'Change player names',
+  nmHint:'Leave blank to use the default names.',
+  nmYou:'You',
   short:['A','B','C','D'],
   dur:{P:'LAST',T:'1T'}, flip:'FLIP',
   rowPlant:'Plant',
@@ -1348,7 +1382,7 @@ en:{
        +'<b>Best on a desktop or tablet in landscape.</b>',
   sStart:'Start',
   sRules:'Read the rules first',
-  sLang:'Language',
+  sLang:'Language / 言語',
   phOk:'OK',
   phStartT:'Round {n}',
   phStartM:'<b>{p}</b> is the starting player.',
@@ -1679,6 +1713,16 @@ const MAXFIRE = ()=> (NPLAYER===3 ? 2 : 1);   // 応変魔術を撃てる回数
 const NHELD   = ()=> (12/NPLAYER);            // ドラフトで取る枚数（4人=3 / 3人=4）
 const HUMAN = 0;
 let NAMES = I18N.ja.names.slice();
+let CUSTOM_NAMES = [null,null,null,null];      // null なら既定名を使う
+/* 既定名（言語別）にカスタム名を重ねる。表示は「A：名前」の形を保つ */
+function composeNames(){
+  const t=T();
+  return t.names.map((def,i)=>{
+    const c=CUSTOM_NAMES[i];
+    if(!c) return def;
+    return t.short[i]+(LANG==='ja'?'：':': ')+c;
+  });
+}
 // 席：下→左→上→右（時計回り）。3人戦は西を空け、下→上→右に配置する
 const POS_4 = ['s','w','n','e'];
 const POS_3 = ['s','n','e'];
@@ -2956,7 +3000,8 @@ function expandGlyphs(html){
 
 function applyLang(){
   const t=T();
-  NAMES = t.names.slice();
+  NAMES = composeNames();
+  if(typeof buildNames==='function') buildNames();
   SHORT = t.short.slice();
   SUIT_SYM = t.suits.slice();
   document.documentElement.lang = LANG;
@@ -3029,6 +3074,43 @@ document.getElementById('sLang').addEventListener('change',e=>{
   document.getElementById('lang').value=LANG;
   applyLang();
 });
+/* 名前入力欄を人数に応じて作り直す。入力値は保持する */
+function buildNames(){
+  const t=T();
+  const sp=document.getElementById('sPlayers');
+  const n = sp ? parseInt(sp.value,10) : 4;
+  const row=document.getElementById('sNameRow');
+  if(!row) return;
+  // 既存の入力値を退避
+  row.querySelectorAll('input[data-idx]').forEach(inp=>{
+    const i=parseInt(inp.dataset.idx,10);
+    CUSTOM_NAMES[i] = inp.value.trim() || null;
+  });
+  const PC=['--p0','--p1','--p2','--p3'];
+  let html='';
+  for(let i=0;i<n;i++){
+    const def = t.names[i].replace(/^[A-D][：:]\s*/,'');
+    const ph  = (i===0) ? t.nmYou : def;
+    html += `<div class="nmline">`
+         +  `<span class="nmtag" style="background:var(${PC[i]})">${t.short[i]}</span>`
+         +  `<input type="text" data-idx="${i}" maxlength="12" placeholder="${ph}" value="${CUSTOM_NAMES[i]||''}">`
+         +  `</div>`;
+  }
+  row.innerHTML=html;
+  const sum=document.getElementById('sNamesSum');
+  if(sum) sum.textContent=t.nmSum;
+  const hint=document.getElementById('sNameHint');
+  if(hint) hint.textContent=t.nmHint;
+}
+/* 入力欄の内容を CUSTOM_NAMES へ確定させる */
+function commitNames(){
+  document.querySelectorAll('#sNameRow input[data-idx]').forEach(inp=>{
+    const i=parseInt(inp.dataset.idx,10);
+    CUSTOM_NAMES[i] = inp.value.trim() || null;
+  });
+  NAMES = composeNames();
+  if(typeof buildNames==='function') buildNames();
+}
 function buildRounds(){
   const t=T();
   const sp=document.getElementById('sPlayers');
@@ -3042,10 +3124,11 @@ function buildRounds(){
   // 人数セレクタの表記も言語に合わせる
   if(sp){ sp.options[0].textContent=t.pl4; sp.options[1].textContent=t.pl3; }
 }
-document.getElementById('sPlayers').addEventListener('change',()=>{ buildRounds(); });
+document.getElementById('sPlayers').addEventListener('change',()=>{ buildRounds(); buildNames(); });
 document.getElementById('startrules').addEventListener('click',()=>helpVeil.classList.add('on'));
 document.getElementById('startbtn').addEventListener('click',()=>{
   applyPlayers(parseInt(document.getElementById('sPlayers').value,10));
+  commitNames();
   document.getElementById('rounds').value=document.getElementById('sRounds').value;
   document.getElementById('speed').value=document.getElementById('sSpeed').value;
   roundsNote();
