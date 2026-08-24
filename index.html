@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>ElemenTrick（仮）─ 試遊版</title>
+<title>ElemenTrick ─ 試遊版</title>
 <style>
 /* ══════════════════════════════════════════════
    素材：藍の羅紗・胡桃の縁・生成りの札
@@ -32,6 +32,13 @@
   --s1:#AE2E3C;  /* 火 Fire  */
   --s2:#9E5E0E;  /* 地 Earth */
   --s3:#2F7A48;  /* 風 Wind  */
+
+  /* ── 明地パネル（読む場所）── 卓との明暗差を情報の階層に使う */
+  --pane:#EFE9DC;           /* パネル地 */
+  --pane-alt:#E3DBC9;       /* 交互行・ヘッダ */
+  --pane-ink:#26221C;       /* パネル上の文字 */
+  --pane-sub:#6B6357;       /* パネル上の弱い文字 */
+  --pane-line:#C3B9A4;      /* パネル上の罫線 */
 
   --ink:#EAE6DC;
   --muted:#9AA5B1;
@@ -130,10 +137,43 @@ button:focus-visible,[tabindex]:focus-visible{outline:2px solid var(--ivory);out
 .ph-order .arw{color:var(--dim);font-size:12px}
 .ph-order .brk{flex-basis:100%;height:0}
 .ph-round{
-  font-family:var(--mono);font-size:10px;letter-spacing:.14em;color:var(--dim);
-  margin:10px 0 2px;
+  font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;color:var(--brass);
+  margin:11px 0 3px;
+}
+.ph-round .nt{color:var(--dim);letter-spacing:0;margin-left:7px;font-size:10px}
+.ph-order{margin:3px 0 2px}
+.ph-order .pchip .ix{
+  display:inline-block;min-width:12px;margin-right:5px;
+  font-size:9.5px;opacity:.65;font-weight:700;
+}
+.ph-order.isLead .pchip{background:rgba(201,162,39,.10)}
+.ph-order.isLead .pchip:first-of-type{
+  background:rgba(201,162,39,.26);box-shadow:0 0 0 1px var(--brass) inset;
 }
 .phasebox .btn{margin-top:16px;padding:10px 30px}
+.phflow{margin:14px auto 2px;max-width:520px;text-align:left;display:none}
+.phflow.on{display:block}
+.phflow>summary{
+  cursor:pointer;font-size:12px;color:var(--brass);
+  list-style:none;padding:5px 2px;user-select:none;text-align:center;
+}
+.phflow>summary::-webkit-details-marker{display:none}
+.phflow>summary::before{content:'▸ '}
+.phflow[open]>summary::before{content:'▾ '}
+.phflow-body{
+  background:rgba(0,0,0,.22);border:1px solid rgba(244,237,222,.10);
+  border-radius:5px;padding:10px 12px;margin-top:4px;
+}
+.phstep{display:flex;gap:9px;padding:6px 0;border-bottom:1px solid rgba(244,237,222,.07)}
+.phstep:last-child{border-bottom:0}
+.phstep .no{
+  flex:0 0 19px;height:19px;border-radius:50%;
+  border:1px solid var(--brass);color:var(--brass);
+  font:700 11px/17px var(--mono);text-align:center;
+}
+.phstep .tx{flex:1;min-width:0;font-size:12px;line-height:1.55}
+.phstep .tx b{color:var(--ivory);font-size:12.5px}
+.phstep .tx .wy{display:block;color:var(--muted);font-size:11.5px;margin-top:1px}
 .phskip{
   display:flex;align-items:center;justify-content:center;gap:6px;
   margin-top:14px;font-size:11.5px;color:var(--muted);cursor:pointer;user-select:none;
@@ -384,16 +424,18 @@ dl.gl dd b{color:var(--ink)}
 }
 .board{
   display:grid;grid-template-columns:64px repeat(var(--ntrick,15),1fr);
-  gap:2px;font-family:var(--mono);
+  gap:1px;font-family:var(--mono);
+  background:var(--pane);border:1px solid var(--pane-line);border-radius:3px;
+  padding:3px;
 }
 /* 行ラベル（左端） */
 .bl{
   display:flex;align-items:center;gap:5px;padding:0 6px;
-  font-size:11px;color:var(--muted);white-space:nowrap;overflow:hidden;
-  border-right:1px solid #33455A;
+  font-size:11px;color:var(--pane-sub);white-space:nowrap;overflow:hidden;
+  border-right:1px solid var(--pane-line);
 }
 .bl.plr{border-left:3px solid transparent;border-radius:2px 0 0 2px}
-.bl .who{font-weight:700;font-size:11.5px;letter-spacing:.02em}
+.bl .who{font-weight:700;font-size:11.5px;letter-spacing:.02em;color:var(--pane-ink)}
 /* ビッドタイル */
 .bidtile{
   display:inline-flex;align-items:center;justify-content:center;
@@ -409,13 +451,13 @@ dl.gl dd b{color:var(--ink)}
 .track{display:contents}
 /* プレイヤー行のマス */
 .tk{
-  border:1px solid rgba(255,255,255,.05);border-radius:2px;
-  background:rgba(0,0,0,.14);min-height:23px;
+  border:1px solid var(--pane-line);border-radius:2px;
+  background:#F7F3E9;min-height:23px;
   display:flex;align-items:center;justify-content:center;
   transition:background .2s,border-color .2s;
 }
-.tk.past{opacity:.5}
-.tk.now{border-color:var(--ivory);background:rgba(244,237,222,.07)}
+.tk.past{background:var(--pane-alt);opacity:.75}
+.tk.now{border-color:#8A6D12;border-width:2px;background:#FFF6D8}
 /* 獲得マーカー（10mm角ガラスタイル相当） */
 .mk{
   width:17px;height:17px;border-radius:2px;
@@ -424,20 +466,20 @@ dl.gl dd b{color:var(--ink)}
 }
 @keyframes mkin{from{transform:scale(.3);opacity:0}to{transform:scale(1);opacity:1}}
 .slot{
-  border:1px solid #33455A;border-radius:2px;background:var(--felt-deep);
+  border:1px solid var(--pane-line);border-radius:2px;background:#F7F3E9;
   min-height:44px;padding:2px;display:flex;flex-direction:column;gap:2px;
   transition:border-color .2s,opacity .2s;position:relative;
 }
-.slot .no{font-family:var(--mono);font-size:11px;color:#8B96A4;text-align:center;line-height:1.25}
-.slot.past{opacity:.35}
-.slot.now{border-color:var(--ivory)}
-.slot.pick{cursor:pointer;border-color:var(--warn)}
-.slot.pick:hover{background:#33455A}
-.slot.blocked{opacity:.28;cursor:not-allowed}
+.slot .no{font-family:var(--mono);font-size:11px;color:var(--pane-sub);text-align:center;line-height:1.25;font-weight:600}
+.slot.past{background:var(--pane-alt);opacity:.7}
+.slot.now{border-color:#8A6D12;border-width:2px;background:#FFF6D8}
+.slot.pick{cursor:pointer;border-color:#B4721E;background:#FBEFD6}
+.slot.pick:hover{background:#F6E3B8}
+.slot.blocked{opacity:.3;cursor:not-allowed}
 .chipline{
   font-family:var(--mono);font-size:11px;line-height:1.45;border-radius:3px;
   border:1px solid;padding:2px 3px;text-align:center;letter-spacing:.02em;
-  background:rgba(0,0,0,.25);
+  background:#FFFDF7;font-weight:600;
 }
 .chipline .du{margin-left:2px;font-size:9.5px;letter-spacing:0}
 .chipline .ow{
@@ -452,9 +494,9 @@ dl.gl dd b{color:var(--ink)}
 .raillegend i{font-style:normal;display:inline-flex;align-items:center;gap:3px}
 .lgbox{display:inline-block;width:16px;height:9px;border:1px solid var(--muted);border-radius:2px}
 .lgbox.fill{background:var(--muted)}
-.slot .win{font-family:var(--mono);font-size:10px;text-align:center;color:var(--muted)}
+.slot .win{font-family:var(--mono);font-size:10px;text-align:center;color:var(--pane-sub)}
 .slot .shield{
-  position:absolute;top:1px;right:2px;font-size:8px;color:var(--warn);
+  position:absolute;top:1px;right:2px;font-size:8px;color:#9A5B12;font-weight:700;
   font-family:var(--mono);letter-spacing:.05em;
 }
 
@@ -542,23 +584,64 @@ body[data-rank="R"] .table::after{opacity:1}
 
 /* 中央 */
 .center{grid-area:center;position:relative;z-index:2}
-.lens{
-  position:absolute;left:50%;top:47%;transform:translate(-50%,-50%);
-  width:86px;height:86px;border-radius:50%;
-  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;
-  background:radial-gradient(circle at 42% 36%, rgba(255,255,255,.10), rgba(0,0,0,.32));
-  border:1px solid rgba(244,237,222,.28);
-  box-shadow:0 2px 14px rgba(0,0,0,.4), inset 0 0 22px rgba(0,0,0,.35);
-  pointer-events:none;
+.bidsum{
+  position:absolute;left:8px;top:4px;display:none;width:200px;z-index:6;
+  font-family:var(--mono);line-height:1.45;
+  background:rgba(8,13,20,.66);border:1px solid rgba(244,237,222,.16);
+  border-radius:5px;padding:6px 11px;z-index:4;
 }
+.bidsum.on{display:block}
+.bidsum.wide{width:470px}
+.bidsum .lb{display:block;color:var(--muted);font-size:10px;letter-spacing:.08em;margin-bottom:1px}
+.bidsum .big{display:flex;align-items:baseline;gap:7px}
+.bidsum .vl{font-size:23px;font-weight:700;color:var(--ivory);line-height:1}
+.bidsum .of{font-size:13px;color:var(--muted)}
+.bidsum .df{font-size:13px;font-weight:700}
+.bidsum .df.under{color:#79C08D}
+.bidsum .df.over{color:#E06C75}
+.bidsum .df.even{color:var(--ivory)}
+.bidsum .exp{
+  font-family:var(--sans);font-size:11.5px;line-height:1.5;
+  color:var(--muted);margin-top:4px;white-space:normal;
+}
+.bidsum .exp b{color:var(--ivory)}
+/* 開始前の順序一覧 */
+.bidsum .ordrow{display:flex;align-items:center;gap:4px;margin:3px 0 5px;flex-wrap:wrap}
+.bidsum .ordrow:last-child{margin-bottom:0}
+.bidsum .ordlb{color:var(--brass);font-size:10px;letter-spacing:.08em;display:block;margin-top:6px}
+.bidsum .ordlb:first-child{margin-top:0}
+.bidsum .oc{font-size:11px;font-weight:700;border:1px solid;border-radius:3px;padding:1px 5px}
+.bidsum .oa{color:var(--dim);font-size:10px}
+.lens{
+  position:absolute;left:50%;top:66%;transform:translate(-50%,-50%);
+  width:auto;min-width:210px;height:72px;border-radius:8px;
+  display:flex;flex-direction:row;align-items:center;justify-content:center;gap:14px;
+  padding:0 16px;white-space:nowrap;
+  background:radial-gradient(circle at 42% 36%, rgba(20,28,38,.92), rgba(6,10,16,.96));
+  border:1.5px solid rgba(244,237,222,.42);
+  box-shadow:0 3px 18px rgba(0,0,0,.55), inset 0 0 20px rgba(0,0,0,.4);
+  pointer-events:none;z-index:3;
+}
+.lens .lcol{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px}
+.lens .lcol.lstack{align-items:flex-start;gap:4px}
+.lens .lcol.lsep{width:1px;height:42px;background:rgba(244,237,222,.18);gap:0}
+.lens .tno{font-family:var(--mono);font-size:22px;font-weight:700;color:var(--ivory);line-height:1}
+.lens .tno .of{font-size:12px;color:var(--muted);margin-left:1px}
+.lens .sub.tlb{font-size:9.5px;letter-spacing:.06em}
 .lens .kanji{
-  font-family:var(--mincho);font-size:30px;line-height:1;font-weight:600;
+  font-family:var(--mincho);font-size:34px;line-height:1;font-weight:700;
   transition:color .5s;
 }
 .lens .kanji.N{color:var(--brass)} .lens .kanji.Rv{color:var(--verdigris)}
-.lens .sub{font-family:var(--mono);font-size:10.5px;color:var(--muted);letter-spacing:.1em}
-.lens .trump{font-size:19px;line-height:1.15}
-.lens .trump .none{color:var(--dim);font-size:10px;font-family:var(--mono)}
+.lens .sub{font-family:var(--mono);font-size:10.5px;color:#B6C0CC;letter-spacing:.02em;line-height:1.35}
+.lens .trump{font-size:17px;line-height:1.1}
+.lens .trump .none{color:var(--dim);font-size:9.5px;font-family:var(--mono);letter-spacing:.04em}
+.lens .trump .tsym{
+  display:inline-flex;align-items:center;gap:2px;
+  border:1.5px solid;border-radius:3px;padding:0 5px;
+  background:rgba(0,0,0,.3);font-weight:700;
+}
+.lens .trump .tsym .du{font-size:9px;font-family:var(--mono);font-weight:700;opacity:.9}
 
 /* 出札：座席方向に配置 */
 .played{position:absolute;z-index:3;transition:transform .32s cubic-bezier(.2,.7,.3,1),opacity .32s}
@@ -566,6 +649,7 @@ body[data-rank="R"] .table::after{opacity:1}
 .played.pos-w{left:12px;top:50%;transform:translateY(-50%) rotate(-3deg)}
 .played.pos-n{left:50%;top:6px;transform:translateX(-50%) rotate(-1.5deg)}
 .played.pos-e{right:12px;top:50%;transform:translateY(-50%) rotate(3deg)}
+
 .played .who{
   font-family:var(--mono);font-size:11px;color:var(--muted);text-align:center;margin-bottom:3px;
 }
@@ -574,6 +658,30 @@ body[data-rank="R"] .table::after{opacity:1}
 .played.enter-w{transform:translateY(-50%) translateX(-60px) rotate(-3deg);opacity:0}
 .played.enter-n{transform:translateX(-50%) translateY(-60px) rotate(-1.5deg);opacity:0}
 .played.enter-e{transform:translateY(-50%) translateX(60px) rotate(3deg);opacity:0}
+
+/* ── トリック決着の演出 ── */
+/* 勝ち札を持ち上げて強調する */
+.played.winner{z-index:6}
+.played.winner .cardsvg,.played.winner svg{
+  filter:drop-shadow(0 0 0 rgba(0,0,0,0));
+  animation:winpop .38s cubic-bezier(.2,.8,.3,1) forwards;
+}
+@keyframes winpop{
+  0%{transform:scale(1) translateY(0)}
+  55%{transform:scale(1.16) translateY(-7px)}
+  100%{transform:scale(1.10) translateY(-5px)}
+}
+/* 敗れた札を沈める */
+.played.loser{opacity:.42;transition:opacity .3s}
+/* 勝者の席へ吸い込む */
+.center.sweeping .played{
+  transition:transform .42s cubic-bezier(.5,0,.75,0), opacity .42s ease-in;
+  opacity:0;
+}
+.center.sweeping .played.sw-n{transform:translateX(-50%) translateY(-150px) scale(.55)}
+.center.sweeping .played.sw-s{transform:translateX(-50%) translateY(150px) scale(.55)}
+.center.sweeping .played.sw-w{transform:translateY(-50%) translateX(-300px) scale(.55)}
+.center.sweeping .played.sw-e{transform:translateY(-50%) translateX(300px) scale(.55)}
 
 /* ── SVGカード ── */
 .svgcard{display:block;border-radius:5px;box-shadow:0 2px 6px rgba(0,0,0,.45)}
@@ -637,42 +745,45 @@ details.logbox summary{
 /* ── 得点表（常時表示） ── */
 .paytable{
   display:flex;align-items:stretch;
-  border:1px solid #33455A;border-radius:3px;background:var(--felt-deep);
+  border:1px solid var(--pane-line);border-radius:3px;background:var(--pane);
   overflow:hidden;font-family:var(--mono);
 }
 .paytable .ttl{
   display:flex;flex-direction:column;justify-content:center;
-  padding:5px 11px;font-size:11px;letter-spacing:.1em;color:#A3AEBC;
-  border-right:1px solid #33455A;white-space:nowrap;line-height:1.6;
+  padding:5px 11px;font-size:11px;letter-spacing:.1em;color:var(--pane-sub);
+  border-right:1px solid var(--pane-line);white-space:nowrap;line-height:1.6;
+  background:var(--pane-alt);
 }
-.paytable .ttl b{color:var(--ivory);font-size:12px;font-weight:600;letter-spacing:.04em}
+.paytable .ttl b{color:var(--pane-ink);font-size:12px;font-weight:700;letter-spacing:.04em}
 .ptlabels{display:flex;flex-direction:column;text-align:right;
-  border-right:1px solid #33455A;padding:0 10px 0 11px;justify-content:flex-end}
-.ptlabels div{font-size:12px;color:#A3AEBC;line-height:1.5;padding:2px 0;white-space:nowrap}
-.ptlabels div.l-hit{color:#F0637A;font-weight:600}
-.ptlabels div.l-n1{color:#E8C15A}
-.ptlabels div.l-n2{color:#C9B98A}
+  border-right:1px solid var(--pane-line);padding:0 10px 0 11px;justify-content:flex-end;
+  background:var(--pane-alt)}
+.ptlabels div{font-size:12px;color:var(--pane-sub);line-height:1.5;padding:2px 0;white-space:nowrap}
+.ptlabels div.l-hit{color:#B4143A;font-weight:700}
+.ptlabels div.l-n1{color:#8A6212}
+.ptlabels div.l-n2{color:#6B6357}
 .ptgrid{display:flex;flex:1}
 .ptcol{
   flex:1;display:flex;flex-direction:column;text-align:center;
-  border-right:1px solid rgba(255,255,255,.06);min-width:0;
+  border-right:1px solid var(--pane-line);min-width:0;
 }
 .ptcol:last-child{border-right:0}
-.ptcol .b{font-size:14px;font-weight:700;padding:3px 0 2px;color:var(--ivory);
-  background:rgba(255,255,255,.06);line-height:1.25}
-.ptcol .v{font-size:14px;padding:2px 0;line-height:1.4;font-weight:600}
-.ptcol .v.hit{color:#F0637A;font-weight:700}
-.ptcol .v.n1{color:#E8C15A}
-.ptcol .v.n2{color:#C9B98A;font-size:13px;font-weight:400}
+.ptcol .b{font-size:14px;font-weight:700;padding:3px 0 2px;color:var(--pane-ink);
+  background:var(--pane-alt);line-height:1.25}
+.ptcol .v{font-size:14px;padding:2px 0;line-height:1.4;font-weight:700}
+.ptcol .v.hit{color:#B4143A}
+.ptcol .v.n1{color:#8A6212}
+.ptcol .v.n2{color:#6B6357;font-size:13px;font-weight:500}
 .ptcol .who{font-size:11px;line-height:1.35;padding:2px 0 3px;min-height:17px;
-  font-family:var(--mono);letter-spacing:.02em;font-weight:600}
-.ptcol.mine{background:rgba(240,99,122,.13)}
-.ptcol.mine .b{background:rgba(240,99,122,.22)}
-.ptcol.taken{opacity:.32}
+  font-family:var(--mono);letter-spacing:.02em;font-weight:700}
+.ptcol.mine{background:#F8DCE2}
+.ptcol.mine .b{background:#F0BCC7}
+.ptcol.taken{opacity:.42}
 
 /* ── 座席トースト（誰が何をしたか） ── */
 .seattoast{
   position:absolute;z-index:14;pointer-events:none;
+  grid-column:1/-1;grid-row:1/-1;   /* grid の暗黙セルに閉じ込められないよう全域を占有 */
   background:rgba(8,13,20,.95);border:1px solid;border-radius:5px;
   padding:7px 13px;max-width:230px;
   box-shadow:0 5px 20px rgba(0,0,0,.6);
@@ -695,8 +806,9 @@ details.logbox summary{
 .seattoast.at-n{left:50%;top:104px;transform:translateX(-50%) translateY(-6px)}
 .seattoast.at-n.on{transform:translateX(-50%) translateY(0)}
 .seattoast.at-n::after{left:50%;margin-left:-5px;top:-5px;border-bottom:0;border-right:0}
-.seattoast.at-w{left:20px;top:50%;transform:translateY(-50%) translateX(-6px)}
-.seattoast.at-w.on{transform:translateY(-50%) translateX(0)}
+/* 西は開始前パネル（フェイズ順序一覧・宣言総和）と縦位置が重なりうるため、下寄りに固定 */
+.seattoast.at-w{left:20px;top:auto;bottom:110px;transform:translateX(-6px)}
+.seattoast.at-w.on{transform:translateX(0)}
 .seattoast.at-w::after{left:22px;top:-5px;border-bottom:0;border-right:0}
 .seattoast.at-e{right:20px;top:50%;transform:translateY(-50%) translateX(6px)}
 .seattoast.at-e.on{transform:translateY(-50%) translateX(0)}
@@ -720,6 +832,57 @@ details.logbox summary{
 .offerstrip .expl .ok{color:#79C08D}
 .offerstrip .expl .ng{color:var(--dim)}
 
+/* ── 応変魔術：全員分のフキダシ ── */
+.obub{
+  position:absolute;z-index:11;
+  display:flex;flex-direction:column;align-items:center;gap:3px;
+  animation:obubin .22s cubic-bezier(.2,.8,.3,1);
+}
+@keyframes obubin{from{opacity:0;transform:translateY(6px) scale(.94)}to{opacity:1}}
+.obub .bx{
+  position:relative;min-width:62px;min-height:56px;
+  display:flex;align-items:center;justify-content:center;
+  background:rgba(10,15,22,.94);border:1.5px solid;border-radius:7px;
+  padding:6px 8px;box-shadow:0 4px 14px rgba(0,0,0,.5);
+  transition:box-shadow .25s,border-color .25s,opacity .25s;
+}
+.obub .bx::after{                      /* しっぽ */
+  content:'';position:absolute;width:9px;height:9px;
+  background:rgba(10,15,22,.94);border:1.5px solid;border-color:inherit;
+  transform:rotate(45deg);
+}
+.obub.at-n .bx::after{top:-6px;left:50%;margin-left:-5px;border-right:0;border-bottom:0}
+.obub.at-s .bx::after{bottom:-6px;left:50%;margin-left:-5px;border-left:0;border-top:0}
+.obub.at-w .bx::after{left:-6px;top:50%;margin-top:-5px;border-right:0;border-top:0}
+.obub.at-e .bx::after{right:-6px;top:50%;margin-top:-5px;border-left:0;border-bottom:0}
+.obub .nm{font-family:var(--mono);font-size:10.5px;font-weight:700;letter-spacing:.02em}
+.obub .none{font-family:var(--sans);font-size:11px;color:var(--dim)}
+.obub.pass .bx{border-color:#3B4757 !important;background:rgba(10,15,22,.62)}
+.obub.win  .bx{box-shadow:0 0 0 2px var(--brass),0 6px 20px rgba(201,162,39,.35)}
+.obub.lose .bx{opacity:.42}
+.obub .tag{
+  font-family:var(--mono);font-size:9px;font-weight:700;letter-spacing:.04em;
+  border-radius:2px;padding:1px 4px;white-space:nowrap;
+}
+.obub.win  .tag{background:var(--brass);color:#101720}
+.obub.lose .tag{background:#3B4757;color:#9AA5B1}
+/* 位置：出札と同じ配置。布石は中央 */
+.obub.at-n{left:50%;top:0;transform:translateX(-50%)}
+.obub.at-s{left:50%;bottom:2px;transform:translateX(-50%);z-index:13}
+.obub.at-w{left:8px;top:50%;transform:translateY(-50%)}
+.obub.at-e{right:8px;top:50%;transform:translateY(-50%)}
+/* 布石は中央の空きへ（南北のフキダシと重ならない位置） */
+.obub.at-c{left:26%;top:50%;transform:translate(-50%,-50%)}
+.obub.at-s{left:72%}
+.obub.at-c .bx::after{display:none}
+/* 応変フェイズ中はレンズを隠す（同じ場所を使うため） */
+.center.offering .lens{opacity:0;transition:opacity .2s}
+/* リード強調 */
+.seat.leadglow .plate{
+  box-shadow:0 0 0 2px var(--brass),0 0 18px rgba(201,162,39,.45);
+  transition:box-shadow .3s;
+}
+
 /* ── リアクティブ判断ポップアップ（手札の直上） ── */
 .reactpop{
   position:absolute;left:50%;bottom:132px;transform:translateX(-50%);z-index:9;
@@ -742,13 +905,38 @@ details.logbox summary{
 body[data-resolve="1"] .seat .plate,
 body[data-resolve="1"] .seat .minis,
 body[data-resolve="1"] .seat .leadmark,
-body[data-resolve="1"] .lens{
-  opacity:.18;transition:opacity .18s;
+body[data-resolve="1"] .bidsum{
+  position:absolute;left:8px;top:4px;display:none;width:200px;z-index:6;
+  font-family:var(--mono);line-height:1.45;
+  background:rgba(8,13,20,.66);border:1px solid rgba(244,237,222,.16);
+  border-radius:5px;padding:6px 11px;z-index:4;
 }
+.bidsum.on{display:block}
+.bidsum.wide{width:470px}
+.bidsum .lb{display:block;color:var(--muted);font-size:10px;letter-spacing:.08em;margin-bottom:1px}
+.bidsum .big{display:flex;align-items:baseline;gap:7px}
+.bidsum .vl{font-size:23px;font-weight:700;color:var(--ivory);line-height:1}
+.bidsum .of{font-size:13px;color:var(--muted)}
+.bidsum .df{font-size:13px;font-weight:700}
+.bidsum .df.under{color:#79C08D}
+.bidsum .df.over{color:#E06C75}
+.bidsum .df.even{color:var(--ivory)}
+.bidsum .exp{
+  font-family:var(--sans);font-size:11.5px;line-height:1.5;
+  color:var(--muted);margin-top:4px;white-space:normal;
+}
+.bidsum .exp b{color:var(--ivory)}
+/* 開始前の順序一覧 */
+.bidsum .ordrow{display:flex;align-items:center;gap:4px;margin:3px 0 5px;flex-wrap:wrap}
+.bidsum .ordrow:last-child{margin-bottom:0}
+.bidsum .ordlb{color:var(--brass);font-size:10px;letter-spacing:.08em;display:block;margin-top:6px}
+.bidsum .ordlb:first-child{margin-top:0}
+.bidsum .oc{font-size:11px;font-weight:700;border:1px solid;border-radius:3px;padding:1px 5px}
+.bidsum .oa{color:var(--dim);font-size:10px}
 .offerstrip{
-  position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);z-index:12;
+  position:absolute;left:50%;top:2px;transform:translateX(-50%);z-index:12;
   display:flex;gap:9px;align-items:flex-start;
-  background:rgba(8,13,20,.86);border:1px solid #46586E;border-radius:5px;
+  background:rgba(8,13,20,.92);border:1px solid #46586E;border-radius:5px;
   padding:8px 12px 7px;backdrop-filter:blur(3px);
   box-shadow:0 6px 20px rgba(0,0,0,.5);
 }
@@ -867,7 +1055,6 @@ body[data-resolve="1"] .lens{
 
   <div class="masthead">
     <h1 id="appTitle">ElemenTrick</h1>
-    <span class="prov" id="provisional">（仮）</span>
     <span class="spacer"></span>
     <span class="dealtag" id="dealtag"></span>
     <select id="lang" class="sel-mode" style="min-width:96px">
@@ -883,8 +1070,8 @@ body[data-resolve="1"] .lens{
     </select>
     <label class="modelab" for="speed" id="lbSpeed">AIの思考速度</label>
     <select id="speed" class="sel-mode">
-      <option value="2.6" selected></option>
-      <option value="1"></option>
+      <option value="1.95"></option>
+      <option value="0.75" selected></option>
     </select>
     <button class="btn" id="helpbtn"></button>
     <button class="btn" id="glossbtn"></button>
@@ -897,6 +1084,10 @@ body[data-resolve="1"] .lens{
       <div class="ph-m" id="phMsg"></div>
       <div class="ph-s" id="phSub"></div>
       <div id="phOrder"></div>
+      <details class="phflow" id="phFlow">
+        <summary id="phFlowSum"></summary>
+        <div class="phflow-body" id="phFlowBody"></div>
+      </details>
       <button class="btn primary" id="phBtn"></button>
       <span class="hintk">Enter</span>
       <label class="phskip"><input type="checkbox" id="phSkip"><span id="phSkipLbl"></span></label>
@@ -905,7 +1096,7 @@ body[data-resolve="1"] .lens{
 
   <div class="startveil" id="startveil">
     <div class="startbox">
-      <h1 class="stitle">ElemenTrick<span class="sprov" id="sProv"></span></h1>
+      <h1 class="stitle">ElemenTrick</h1>
       <p class="stag" id="sTagline"></p>
       <div class="snote" id="sNote"></div>
       <div class="srow">
@@ -976,6 +1167,7 @@ body[data-resolve="1"] .lens{
           <div class="seat seat-n" id="seatN"></div>
           <div class="seat seat-w" id="seatW"></div>
           <div class="seat seat-e" id="seatE"></div>
+          <div class="bidsum" id="bidSum"></div>
           <div class="center" id="center">
             <div class="lens" id="lens"></div>
           </div>
@@ -1017,7 +1209,7 @@ body[data-resolve="1"] .lens{
 let LANG = 'ja';
 const I18N = {
 ja:{
-  title:'ElemenTrick', prov:'（仮）', rules:'ルール', glossary:'用語集', newMatch:'新しいマッチ',
+  title:'ElemenTrick', prov:'', rules:'ルール', glossary:'用語集', newMatch:'新しいマッチ',
   playersLabel:'人数', pl4:'4人', pl3:'3人',
   roundsLabel:'戦数', rounds:['1戦','2戦','3戦','4戦'],
   speedLabel:'速度', speeds:['じっくり','高速'],
@@ -1030,7 +1222,7 @@ ja:{
   short:['A','B','C','D'],
   dur:{P:'継続',T:'1T'}, flip:'逆転',
   rowPlant:'布石',
-  prov:'（仮）',
+  prov:'',
   sTagline:'勝利条件そのものが動き続けるトリックテイキング',
   sNote:'<b>AI 3人との4人対戦です。</b>ルール・アートワークとも調整中の試作版で、'
        +'スート（水・火・地・風）の絵柄や数字も仮のものです。<br>'
@@ -1051,17 +1243,55 @@ ja:{
           +'先手から順に、この並びを3巡します。',
   phDraftR:[],
   phPlaceT:'布石',
-  phPlaceM:'取った3枚のうち <b>1枚</b> を、1〜15のどのトリックで発動させるか決めて置きます。',
-  phPlaceS:'必ず発動します。残る2枚が手元の応変魔術になります。',
+  phPlaceM:()=>`取った${NHELD()}枚のうち <b>1枚</b> を、1〜${NTRICK}のどのトリックで発動させるか決めて置きます。`,
+  phPlaceS:()=>`必ず発動します。残る${NHELD()-1}枚が手元の応変魔術になります（発動できるのは${MAXFIRE()}枚まで）。`,
   phBidT:'ビッド宣言',
   phBidM:'自分が <b>何トリック勝つか</b> を宣言します。',
   phBidS:'布石とは逆の順で宣言します。他プレイヤーと同じ数は選べません。',
+  phFlowSum:'この戦の流れを確認する',
+  phPlaceSum:'布石とは何かを確認する',
+  phPlaceFlow:()=>[
+    {t:'必ず発動する', d:`置いたトリックが来たとき、<b>取り消せずに発動</b>します`,
+     w:'ドラフトで取った札のうち1枚だけが布石になり、残りは手元の応変魔術になります'},
+    {t:'時間を設計する', d:'1〜'+NTRICK+'のどこに置くかを自分で選べます',
+     w:'「第○トリックからこの状態にしたい」という予約。<b>継続</b>なら以降ずっと、<b>1T</b>ならそのトリックだけ効きます'},
+    {t:'その軸を封じる', d:'布石のあるトリックでは、<b>同じ軸</b>の応変魔術を出せません',
+     w:'理力の布石は理力の応変を、元素の布石は元素の応変を防ぎます。<b>別の軸なら重ねられます</b>'},
+    {t:'全員に見える', d:'表向きで置かれ、誰でもいつでも確認できます',
+     w:'他家の布石を見て、自分の宣言をどこに置くか決められます'}
+  ],
+  phFlow:()=>[
+    {t:'ドラフト', d:`条件カード12枚から1枚ずつ、各自${NHELD()}枚を取る`,
+     w:'<b>なぜ</b>：勝敗の条件を変える手段を、先に確保するため。手札を見てから選べる。全員に公開される'},
+    {t:'布石', d:'取った札のうち<b>1枚</b>を、1〜'+NTRICK+'のどのトリックで発動させるか決めて置く',
+     w:'<b>なぜ</b>：そのトリックで<b>必ず</b>発動する予約。「第○トリックまでにこの状態を作る」という時間の設計ができる。同じ軸の応変魔術をそのトリックで封じる効果もある'},
+    {t:'ビッド宣言', d:'自分が<b>何トリック勝つか</b>を宣言する（布石とは逆の順）',
+     w:'<b>なぜ</b>：宣言した数にぴったり合わせるのが目的。多く取れば良いのではない。他プレイヤーと同じ数は選べないので、早く宣言するほど選択肢が広い'},
+    {t:'応変魔術', d:'各トリックの直前に、手元の札を出して条件を変えられる（'+'発動できるのは'+MAXFIRE()+'枚まで'+'）',
+     w:'<b>なぜ</b>：宣言に届かない／取りすぎそうなときの調整手段。他家の妨害にも使える。同時公開・撤回不可'},
+    {t:'プレイ', d:NTRICK+'トリックを戦い、宣言との差で得点する',
+     w:'<b>なぜ</b>：ぴったりなら高得点、±3以上で0点。<b>勝ちすぎないことも技術</b>'}
+  ],
+  usedN:(n,m)=>`${n}/${m} 使用`,
+  obNone:'出さない', obPlant:'布石', obFire:'発動', obLose:'優先権で敗れ手元へ', obBlocked:'布石により出せず',
+  hPriority:(lead,win)=>`同じ軸に複数が出たときは、<b>リードプレイヤーに近い順</b>で決まります。リードは <b>${lead}</b>。したがって <b>${win}</b> が優先され、発動します。敗れたカードは手元に戻り、また使えます。`,
   phOrderLbl:'順番',
+  ordDraft:'① カード取得', ordDraftN:()=>`この並びで${NHELD()}巡`,
+  ordPlace:'② 布石', ordBid:'③ ビッド宣言', ordBidN:'逆順',
+  ordLead:'④ トリック1のプレイ順', ordLeadN:'先頭がリード',
   phSkip:'この案内を今後表示しない',
   narrowWarn:'画面の幅が足りません。PC またはタブレット（横向き）での利用を推奨します。',
   roundsNote4:()=>`${NPLAYER}戦：全員が先手（P1）を1回ずつ務めます。`,
   roundsNoteN:()=>`${NPLAYER}戦（全員が先手を1回ずつ務める）以外は、手番順の有利不利が発生します。`,
-  lensHigh:'高い方が勝つ', lensLow:'低い方が勝つ', noTrump:'NO TRUMP',
+  lensHigh:'高い方が勝つ', lensLow:'低い方が勝つ', noTrump:'なし',
+  trumpNoneSub:'元素の優位なし', trumpSub:e=>`${e}が他を上回る`,
+  sbRank:'理力', sbTrump:'切り札', sbTrick:'トリック', sbSum:'宣言の総和',
+  sbUnder:'余る', sbOver:'足りない', sbEven:'ちょうど',
+  sumExp:(T,S,D)=> D<0
+    ? `<b>${-D}トリックが余ります。</b>誰も欲しがらない分を押し付け合う<b>譲り合い</b>の構図。`
+    : D>0
+    ? `<b>${D}トリック足りません。</b>全員は達成できない<b>奪い合い</b>の構図。`
+    : `<b>ちょうど一致。</b>全員が達成できる可能性があります。`,
   kanjiHigh:'正', kanjiLow:'逆',
   legendLast:'継続', legend1T:'1T', legendOwner:'末尾の文字＝布石した人',
   ptTitle:'得点表', ptSub:'宣言 →', ptExact:'ぴったり', ptOff1:'±1', ptOff2:'±2', ptOwner:'宣言者',
@@ -1359,7 +1589,7 @@ ja:{
                 `
 },
 en:{
-  title:'ElemenTrick', prov:'(working title)', rules:'Rules', glossary:'Glossary', newMatch:'New Match',
+  title:'ElemenTrick', prov:'', rules:'Rules', glossary:'Glossary', newMatch:'New Match',
   playersLabel:'Players', pl4:'4 players', pl3:'3 players',
   roundsLabel:'Rounds', rounds:['1 round','2 rounds','3 rounds','4 rounds'],
   speedLabel:'Speed', speeds:['Deliberate','Fast'],
@@ -1394,17 +1624,55 @@ en:{
           +'This same order repeats for three passes.',
   phDraftR:[],
   phPlaceT:'Plant',
-  phPlaceM:'Commit <b>one</b> of your three cards to a specific trick, 1 through 15.',
-  phPlaceS:'It always fires. The other two become your Reactives.',
+  phPlaceM:()=>`Commit <b>one</b> of your ${NHELD()} cards to a specific trick, 1 through ${NTRICK}.`,
+  phPlaceS:()=>`It always fires. The other ${NHELD()-1} become your Reactives (${MAXFIRE()} can ever fire).`,
   phBidT:'Bidding',
   phBidM:'Declare <b>how many tricks you will win</b>.',
   phBidS:'Bids go in the reverse of the plant order. You cannot take a number someone else has.',
+  phFlowSum:'See how this round plays out',
+  phPlaceSum:'What planting does',
+  phPlaceFlow:()=>[
+    {t:'It always fires', d:'When that trick comes around, it <b>fires and cannot be cancelled</b>',
+     w:'Only one of your drafted cards becomes a plant; the rest stay in hand as reactive cards'},
+    {t:'You design the timing', d:'You choose where to put it, anywhere from 1 to '+NTRICK,
+     w:'A reservation for "from trick N onward". <b>LAST</b> holds from then on; <b>1T</b> affects only that trick'},
+    {t:'It seals that axis', d:'On a trick with a plant, no reactive card on the <b>same axis</b> may be played',
+     w:'A rank plant blocks rank reactives; an element plant blocks element ones. <b>The other axis can still stack</b>'},
+    {t:'Everyone can see it', d:'It is placed face up and stays visible',
+     w:'You can read other players\' plants before deciding your own bid'}
+  ],
+  phFlow:()=>[
+    {t:'Draft', d:`Take condition cards one at a time from the 12 on offer (${NHELD()} each)`,
+     w:'<b>Why</b>: to secure the means of changing the winning conditions. You choose after seeing your hand, and every pick is public'},
+    {t:'Plant', d:'Place <b>one</b> of them on a chosen trick (1–'+NTRICK+')',
+     w:'<b>Why</b>: it is a reservation that <b>always</b> fires on that trick. It lets you design when the board changes, and it also blocks reactive cards on the same axis for that trick'},
+    {t:'Bidding', d:'Declare <b>how many tricks you will win</b> (in reverse of the plant order)',
+     w:'<b>Why</b>: the goal is to land exactly on your number, not to take as many as possible. No two players may pick the same number, so bidding early means more choice'},
+    {t:'Reactive', d:'Before each trick you may play a held card to change the conditions ('+MAXFIRE()+' can ever fire)',
+     w:'<b>Why</b>: your adjustment when you are short of your bid or heading past it. It also works as interference. Revealed simultaneously, no take-backs'},
+    {t:'Play', d:'Play out '+NTRICK+' tricks; score on how close you land to your bid',
+     w:'<b>Why</b>: exact is worth the most, and being off by 3 or more scores nothing. <b>Not winning is a skill too</b>'}
+  ],
+  usedN:(n,m)=>`${n}/${m} used`,
+  obNone:'pass', obPlant:'Plant', obFire:'FIRES', obLose:'lost — returns to hand', obBlocked:'blocked by plant',
+  hPriority:(lead,win)=>`When two cards hit the same axis, the one <b>closest to the lead player</b> wins. The lead is <b>${lead}</b>, so <b>${win}</b> fires. The other returns to hand and can be used again.`,
   phOrderLbl:'Order',
+  ordDraft:'1. Draft', ordDraftN:()=>`this order \u00d7 ${NHELD()}`,
+  ordPlace:'2. Plant', ordBid:'3. Bidding', ordBidN:'reversed',
+  ordLead:'4. Trick 1 play order', ordLeadN:'first player leads',
   phSkip:'Don\'t show these again',
   narrowWarn:'This screen is narrow. A desktop or a tablet in landscape works much better.',
   roundsNote4:()=>`${NPLAYER} rounds: every player leads off (P1) exactly once.`,
   roundsNoteN:()=>`Unless you play ${NPLAYER} rounds (where everyone leads off once), turn order gives some players an edge.`,
-  lensHigh:'higher wins', lensLow:'lower wins', noTrump:'NO TRUMP',
+  lensHigh:'higher wins', lensLow:'lower wins', noTrump:'none',
+  trumpNoneSub:'no element outranks', trumpSub:e=>`${e} beats the others`,
+  sbRank:'Rank', sbTrump:'Trump', sbTrick:'Trick', sbSum:'Total bid',
+  sbUnder:'spare', sbOver:'short', sbEven:'exact',
+  sumExp:(T,S,D)=> D<0
+    ? `<b>${-D} trick(s) to spare.</b> Nobody wants them — expect <b>passing them around</b>.`
+    : D>0
+    ? `<b>${D} trick(s) short.</b> Not everyone can succeed — expect a <b>scramble</b>.`
+    : `<b>Exactly even.</b> Everyone could still make their bid.`,
   kanjiHigh:'HIGH', kanjiLow:'LOW',
   legendLast:'LAST', legend1T:'1T', legendOwner:'trailing letters = who planted it',
   ptTitle:'SCORING', ptSub:'bid →', ptExact:'exact', ptOff1:'off 1', ptOff2:'off 2', ptOwner:'bid by',
@@ -1821,13 +2089,15 @@ function miniChip(c){
    得点表（ルール草案 v2.0 §10）
    ═══════════════════════════════════════════════════════ */
 // [ぴったり, ±1, ±2]　※±3以上は0点
+/* 3人戦（16トリック・平均獲得5.33）。宣言7以上は上方修正（v2） */
 const SCORE_3 = {0:[13,10,2],1:[11,8,2],2:[9,6,2],3:[7,4,1],4:[6,3,1],5:[5,2,1],
-                 6:[5,2,1],7:[6,3,1],8:[6,3,1],9:[7,4,1],10:[8,5,2],11:[9,6,2],12:[10,7,2]};
+                 6:[5,2,1],7:[6,4,2],8:[7,5,3],9:[8,6,4],10:[10,8,5],11:[12,10,6],12:[14,11,7]};
+/* 4人戦（15トリック・平均獲得3.75）。宣言5以上は上方修正（v2） */
 const SCORE_T = {0:[10,7,2],1:[8,5,2],2:[6,3,1],3:[5,2,1],4:[5,2,1],
-                 5:[6,3,1],6:[6,3,1],7:[7,4,2],8:[8,5,2],9:[9,6,2]};
+                 5:[6,4,2],6:[7,5,3],7:[8,6,4],8:[10,7,5],9:[12,9,6]};
 function scoreOf(bid, won){
   const t = (NPLAYER===3) ? (bid>=12 ? SCORE_3[12] : SCORE_3[bid])
-                          : (bid>=10 ? [10,7,2]    : SCORE_T[bid]);
+                          : (bid>=9  ? SCORE_T[9]  : SCORE_T[bid]);
   const d = Math.abs(bid-won);
   return d===0 ? t[0] : d===1 ? t[1] : d===2 ? t[2] : 0;
 }
@@ -1855,13 +2125,20 @@ function sleep(ms){
     .then(()=> g===GEN ? undefined : NEVER);
 }
 // AI の思考速度（1=最速／2=普通／3.2=ゆっくり）
-let SPD = 2.6;
+let SPD = 0.75;    // ドラフト・布石・ビッドの思考ラグ（速く）
+let PSPD = 1.25;   // カードを出す処理・出揃った状態の表示（遅く）
 function readSpeed(){
   const el=document.getElementById('speed');
-  SPD = el ? parseFloat(el.value) : 2.6;
+  const base = el ? parseFloat(el.value) : 0.75;
+  SPD  = base;
+  // 「じっくり」(1.95) / 「高速」(0.75) の比を保ったまま、
+  // プレイ系は基準を上げて逆方向に振る（高速選択時でも通常よりゆっくり）
+  PSPD = base===0.75 ? 1.25 : 1.625;
 }
-// 思考ラグ：速度係数を掛ける
-const think = ms => sleep(Math.round(ms*SPD));
+// 思考ラグ（ドラフト・布石・ビッド）
+const think  = ms => sleep(Math.round(ms*SPD));
+// カードを出す処理・出揃った状態の表示（意図的にゆっくり）
+const pthink = ms => sleep(Math.round(ms*PSPD));
 const nx=(p,k)=>(p+k)%NPLAYER;
 const orderFrom=p=>Array.from({length:NPLAYER},(_,k)=>nx(p,k));
 const allP=()=>Array.from({length:NPLAYER},(_,i)=>i);
@@ -1902,6 +2179,7 @@ function startDeal(){
     trump:{value:null,holder:null,dur:null},
     tricksWon: zerosP(),
     placedBy:{}, offerShow:null, changeBanner:null, showClose:false, explain:null,
+    bubbles:null, leadGlow:null,
     order:[], turn:null, acts: allP().map(()=>''),
     played:[], trickCards:[], slotWinner:{},
     winnerThisTrick:null,
@@ -2243,12 +2521,17 @@ async function runDeal(){
       t.phStartT.replace('{n}', M.deal),
       t.phStartM.replace('{p}', NAMES[G.p1]),
       t.phStartS,
-      [{label:t.phOrderLbl, seq:o}]);
+      [
+        {label:t.ordDraft, seq:o, note:(typeof t.ordDraftN==='function'?t.ordDraftN():t.ordDraftN)},
+        {label:t.ordPlace, seq:o},
+        {label:t.ordBid,   seq:o.slice().reverse(), note:t.ordBidN},
+        {label:t.ordLead,  seq:o, note:t.ordLeadN, lead:true}
+      ], true);
   }
   await doDraft();
   await doPlacement();
   await doBid();
-  G.voids=[[0,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,0]];
+  G.voids=allP().map(()=>[0,0,0,0]);
   for(let t=1;t<=NTRICK;t++){
     G.trickNo=t; render();
     await doReactive();
@@ -2296,8 +2579,9 @@ async function doPlacement(){
   logT(T().lPlacePhase);
   {
     const t=T();
-    await phaseDialog(t.phPlaceT, t.phPlaceM, t.phPlaceS,
-      [{label:t.phOrderLbl, seq:orderFrom(G.p1)}]);
+    await phaseDialog(t.phPlaceT, (typeof t.phPlaceM==='function'?t.phPlaceM():t.phPlaceM), (typeof t.phPlaceS==='function'?t.phPlaceS():t.phPlaceS),
+      [{label:t.phOrderLbl, seq:orderFrom(G.p1)}],
+      (typeof t.phPlaceFlow==='function')?t.phPlaceFlow():true);
   }
   G.order=orderFrom(G.p1); G.acts=allP().map(()=>'');
   for(const p of G.order){
@@ -2381,14 +2665,14 @@ async function doReactive(){
   for(let p=0;p<NPLAYER;p++) if(p!==HUMAN){const c=aiOffer(p); if(c)offers[p]=c;}
 
   const open=G.reserve[HUMAN].filter(c=>!blockedAxis(c.axis,G.trickNo));
-  if(!G.spent[HUMAN]&&open.length){
+  if(G.spent[HUMAN]<MAXFIRE()&&open.length){
     const bl=['R','T'].filter(a=>blockedAxis(a,G.trickNo))
       .map(a=>T().axName[a]);
     showPrompt(()=>{ setPrompt(T().qReact, T().hReact); renderReactivePop(); });
     const v=await waitHuman(); PROMPT_REDRAW=null;
     clearReactivePop();
     if(v.kind==='cond') offers[HUMAN]=v.card;
-  }else{ await think(160); }
+  }else{ await pthink(160); }
 
   const placedHere = G.track[G.trickNo].slice();
   const offerList  = orderFrom(G.lead).filter(p=>offers[p]).map(p=>({p,card:offers[p]}));
@@ -2398,24 +2682,26 @@ async function doReactive(){
 
   // 何も起きないトリックは素通り
   if(!placedHere.length && !offerList.length){
-    G.offerShow=null; G.changeBanner=null; G.explain=null;
+    G.offerShow=null; G.changeBanner=null; G.explain=null; G.bubbles=null; G.leadGlow=null;
     render(); await sleep(100); return;
   }
 
-  // 出したプレイヤーの位置に、まず 1 秒だけ表示
-  for(const {p,card:c} of offerList){
-    await seatToast(p, T().tOffer(condName(c)), 1000);
-  }
   clearToasts();
 
-  // ① 全員が出したカードを並べて見せる
-  G.offerShow = [
-    ...placedHere.map(c=>({who:T().tagPlanted.split('・')[0].split(' ·')[0], card:c, st:'placed', col:'var(--warn)'})),
-    ...offerList.map(o=>({who:NAMES[o.p], card:o.card, st:'pending', col:PCOL[o.p]}))
-  ];
+  // ① 全員分のフキダシを同時に表示（出していない人は空）
+  const bub=[];
+  for(const c of placedHere){
+    bub.push({pos:'c', who:T().obPlant, card:c, st:'', col:'var(--warn)'});
+  }
+  for(let q=0;q<NPLAYER;q++){
+    const o=offerList.find(x=>x.p===q);
+    bub.push({pos:POS[q], who:SHORT[q], card:o?o.card:null,
+              st:o?'':'pass', col:o?PCOL[q]:null, p:q});
+  }
+  G.bubbles=bub; G.leadGlow=null;
   setPrompt(T().qResolve, T().hResolveShow);
   render();
-  await think(offerList.length ? 1100 : 700);
+  await pthink(offerList.length ? 1400 : 900);
 
   // ② 優先順位で解決し、勝敗を表示
   const claimed={};
@@ -2423,24 +2709,40 @@ async function doReactive(){
     claimed[c.axis]=c;
     log(T().lPlantFire(condName(c)),'ev');
   }
+  const conflicts=[];                       // 競合が起きた軸
   for(const {p,card:c} of offerList){
-    const item = G.offerShow.find(x=>x.st==='pending' && x.card.id===c.id);
-    if(blockedAxis(c.axis,G.trickNo)){ if(item) item.st='lose'; continue; }
+    const bb = G.bubbles.find(x=>x.p===p);
+    if(blockedAxis(c.axis,G.trickNo)){
+      if(bb){ bb.st='lose'; bb.tag=T().obBlocked; }
+      G.acts[p]=T().aLost(condName(c));
+      log(T().lLost(NAMES[p], condName(c)));
+      continue;
+    }
     if(!(c.axis in claimed)){
       claimed[c.axis]=c;
       G.reserve[p]=G.reserve[p].filter(x=>x.id!==c.id);
       G.spent[p]=(G.spent[p]||0)+1;
-      if(item) item.st='win';
+      if(bb){ bb.st='win'; bb.tag=T().obFire; }
       G.acts[p]=T().aFired(condName(c));
       log(T().lFire(NAMES[p], condName(c)),'ev');
     }else{
-      if(item) item.st='lose';
+      if(bb){ bb.st='lose'; bb.tag=T().obLose; }
+      conflicts.push({axis:c.axis, loser:p});
       G.acts[p]=T().aLost(condName(c));
       log(T().lLost(NAMES[p], condName(c)));
     }
   }
+  // 競合が起きたら、リードを光らせて理由を説明する
+  if(conflicts.length){
+    G.leadGlow=G.lead;
+    const winners=conflicts.map(cf=>{
+      const w=offerList.find(o=>o.card.axis===cf.axis && claimed[cf.axis] && o.card.id===claimed[cf.axis].id);
+      return w?NAMES[w.p]:null;
+    }).filter(Boolean);
+    setPrompt(T().qResolve, T().hPriority(NAMES[G.lead], winners[0]||''), true);
+  }
   render();
-  await think(offerList.length>1 ? 900 : 550);
+  await pthink(conflicts.length ? 1700 : (offerList.length>1 ? 1100 : 700));
 
   // ③ 適用し、状態の変化を明示
   const before = {r:G.rank.value, t:G.trump.value};
@@ -2465,14 +2767,15 @@ async function doReactive(){
   // 状況説明を組み立てる
   const axName=T().axName;
   const lines=[];
-  const usedAx=[...new Set(G.offerShow.map(o=>o.card.axis))];
+  const withCard=(G.bubbles||[]).filter(o=>o.card);
+  const usedAx=[...new Set(withCard.map(o=>o.card.axis))];
   if(usedAx.length>=2){
     lines.push(T().explBoth);
   }
   for(const ax of ['R','T']){
-    const inAx=G.offerShow.filter(o=>o.card.axis===ax);
+    const inAx=withCard.filter(o=>o.card.axis===ax);
     if(!inAx.length) continue;
-    const placed=inAx.find(o=>o.st==='placed');
+    const placed=inAx.find(o=>o.pos==='c');
     const win=inAx.find(o=>o.st==='win');
     const lost=inAx.filter(o=>o.st==='lose');
     if(placed && lost.length){
@@ -2498,6 +2801,7 @@ async function doReactive(){
   await waitHuman(); PROMPT_REDRAW=null;
 
   G.showClose=false; G.offerShow=null; G.changeBanner=null; G.explain=null;
+  G.bubbles=null; G.leadGlow=null;
   render(); await sleep(100);
 }
 
@@ -2516,7 +2820,7 @@ async function doPlay(){
         T().hPlayBid(G.bids[HUMAN], G.tricksWon[HUMAN], stx) +
         (ls===null ? T().hPlayLead : T().hPlayFollow(SUIT_SYM[ls]))));
       card=await waitHuman(); PROMPT_REDRAW=null;
-    }else{ await think(400); card=aiPlay(p); }
+    }else{ await pthink(400); card=aiPlay(p); }
     if(G.trickCards.length && card.s!==G.trickCards[0].card.s) G.voids[p][G.trickCards[0].card.s]=1;
     G.hands[p]=G.hands[p].filter(c=>!(c.s===card.s&&c.r===card.r));
     G.played.push(card);
@@ -2535,13 +2839,47 @@ async function doResolve(){
   G.lead=w.player;
   log(T().lWin(G.trickNo, NAMES[w.player], SUIT_SYM[w.card.s]+w.card.r), w.player===HUMAN?'hl':'');
   tick(T().tkWin(G.trickNo, NAMES[w.player]));
+
+  // ① どの札が勝ったかを見せる（勝ち札を持ち上げ、他を沈める）
   render();
+  {
+    const cen=document.getElementById('center');
+    if(cen) cen.querySelectorAll('.played').forEach(el=>{
+      if(!el.classList.contains('winner')) el.classList.add('loser');
+    });
+  }
+  await pthink(320);
+
+  // ② 勝者が誰かを見せる
   const need = G.bids[w.player]-G.tricksWon[w.player];
   const st = need>0 ? T().needMore(need) : need===0 ? T().needZero : T().needOver(-need);
   G.acts[w.player]=T().aWin(SUIT_SYM[w.card.s]+w.card.r, st);
   render();
-  await seatToast(w.player,
-    T().tWin(SUIT_SYM[w.card.s]+w.card.r, st), 1400);
+  {
+    const cen=document.getElementById('center');
+    if(cen) cen.querySelectorAll('.played').forEach(el=>{
+      if(!el.classList.contains('winner')) el.classList.add('loser');
+    });
+  }
+  await seatToast(w.player, T().tWin(SUIT_SYM[w.card.s]+w.card.r, st), 1400);
+
+  // ③ 勝者が場の札を回収する
+  await sweepTrick(w.player);
+}
+
+/* 場の札を勝者の席へ集めてから消す */
+async function sweepTrick(winner){
+  const cen=document.getElementById('center');
+  if(!cen){ await pthink(60); return; }
+  const dir=POS[winner];                       // 勝者の方向へ集める
+  cen.querySelectorAll('.played').forEach(el=>{
+    el.classList.remove('loser');
+    el.classList.add('sw-'+dir);
+  });
+  cen.classList.add('sweeping');
+  await pthink(170);
+  cen.classList.remove('sweeping');
+  cen.querySelectorAll('.played').forEach(el=>el.classList.remove('sw-n','sw-s','sw-w','sw-e'));
 }
 
 /* ═══════════════════════════════════════════════════════
@@ -2597,9 +2935,10 @@ function drawLog(){
 function tick(t){document.getElementById('ticker').textContent=t;}
 let PROMPT_REDRAW = null;
 function showPrompt(fn){ PROMPT_REDRAW = fn; fn(); }
-function setPrompt(q,h){
+function setPrompt(q,h,asHtml){
   document.getElementById('pq').textContent=q;
-  document.getElementById('ph').textContent=h||'';
+  const ph=document.getElementById('ph');
+  if(asHtml) ph.innerHTML=h||''; else ph.textContent=h||'';
   document.getElementById('prow').innerHTML='';
 }
 
@@ -2615,14 +2954,56 @@ function render(){
 
   renderRoster();
 
+  // 左上パネル：開始前は各フェイズの順序、宣言後は総和と状況説明
+  {
+    const bs=document.getElementById('bidSum');
+    if(bs){
+      const t=T();
+      const done = G.bids.every(b=>b!==null);
+      if(done && !['draft','place'].includes(G.phase)){
+        const S=G.bids.reduce((a,b)=>a+b,0), D=S-NTRICK;
+        const cls = D<0?'under' : D>0?'over' : 'even';
+        const lbl = D<0?t.sbUnder : D>0?t.sbOver : t.sbEven;
+        bs.className='bidsum on wide';
+        bs.innerHTML = `<span class="lb">${t.sbSum}</span>`
+          + `<div class="big"><span class="vl">${S}</span>`
+          + `<span class="of">/ ${NTRICK}</span>`
+          + `<span class="df ${cls}">${D>0?'+':''}${D} ${lbl}</span></div>`
+          + `<div class="exp">${t.sumExp(NTRICK,S,D)}</div>`;
+      } else if(!['dealend','end'].includes(G.phase)){
+        // 開始前：起点から見た各フェイズの順序
+        const o=orderFrom(G.p1);
+        const row=(seq,lead)=>`<div class="ordrow">`+seq.map((p,i)=>
+            `${i?'<span class="oa">→</span>':''}`
+          + `<span class="oc" style="color:${PCOL[p]};border-color:${PCOL[p]}`
+          + `${lead&&i===0?';background:rgba(201,162,39,.22)':''}">${SHORT[p]}</span>`
+          ).join('')+`</div>`;
+        bs.className='bidsum on';
+        bs.innerHTML =
+            `<span class="ordlb">${t.ordDraft}</span>${row(o)}`
+          + `<span class="ordlb">${t.ordPlace}</span>${row(o)}`
+          + `<span class="ordlb">${t.ordBid}</span>${row(o.slice().reverse())}`
+          + `<span class="ordlb">${t.ordLead}</span>${row(o,true)}`;
+      } else { bs.className='bidsum'; bs.innerHTML=''; }
+    }
+  }
+
   // レンズ
   const rn=G.rank.value==='N', tv=G.trump.value;
   document.getElementById('lens').innerHTML=`
-    <div class="kanji ${rn?'N':'Rv'}">${rn?T().kanjiHigh:T().kanjiLow}</div>
-    <div class="sub">${rn?T().lensHigh:T().lensLow}${G.rank.holder?'・'+durLabel(G.rank.holder):''}</div>
-    <div class="trump">${tv===null?`<span class="none">${T().noTrump}</span>`
-      :`<span style="color:var(${SUIT_VAR[tv]})">${SUIT_SYM[tv]}</span><span class="sub"> ${durLabel(G.trump.holder)}</span>`}</div>
-    <div class="sub">T ${['draft','place','bid'].includes(G.phase)?'–':G.trickNo} / 15</div>`;
+    <div class="lcol">
+      <div class="kanji ${rn?'N':'Rv'}">${rn?T().kanjiHigh:T().kanjiLow}</div>
+    </div>
+    <div class="lcol lstack">
+      <div class="sub">${rn?T().lensHigh:T().lensLow}${G.rank.holder?'・'+durLabel(G.rank.holder):''}</div>
+      <div class="trump">${tv===null?`<span class="none">${T().sbTrump}${T().noTrump}</span>`
+        :`<span class="tsym" style="color:var(${SUIT_VAR[tv]});border-color:var(${SUIT_VAR[tv]})">${SUIT_SYM[tv]}<span class="du">${durLabel(G.trump.holder)}</span></span>`}</div>
+    </div>
+    <div class="lcol lsep"></div>
+    <div class="lcol">
+      <div class="tno">${['draft','place','bid'].includes(G.phase)?'–':G.trickNo}<span class="of">/${NTRICK}</span></div>
+      <div class="sub tlb">${T().sbTrick}</div>
+    </div>`;
 
   // ボード（布石行 ＋ プレイヤー4行）
   {
@@ -2691,7 +3072,7 @@ function render(){
         <span class="ab" style="color:${PCOL[p]}">${'ABCD'[p]}</span>
         <span class="nm" style="color:${PCOL[p]}">${NAMES[p].replace(/^[A-D][：:]\s*/,'')}</span>
         ${bidTag}
-        ${G.spent[p]?`<span class="spent">${T().used}</span>`:''}
+        ${G.spent[p]>=MAXFIRE()?`<span class="spent">${T().used}</span>`:(G.spent[p]?`<span class="spent">${T().usedN(G.spent[p],MAXFIRE())}</span>`:'')}
       </div>
       <div class="leadmark">${T().tagLead}</div>
       <div class="minis">${conds.map(miniChip).join('')}</div>`;
@@ -2715,39 +3096,51 @@ function render(){
   // リアクティブ解決の可視化
   const center=document.getElementById('center');
   document.querySelectorAll('.offerstrip,.changebanner').forEach(e=>e.remove());
-  document.body.dataset.resolve = (G.offerShow && G.offerShow.length) ? '1' : '0';
-  if(G.offerShow && G.offerShow.length){
+  // 状況説明と「閉じる」（カード自体はフキダシが担う）
+  const showStrip = !!(G.bubbles && G.bubbles.length) && (G.changeBanner || G.explain || G.showClose);
+  document.body.dataset.resolve = showStrip ? '1' : '0';
+  if(showStrip){
     const st=document.createElement('div');
     st.className='offerstrip';
-    st.innerHTML=`<div class="srow"><div class="hdr">${T().resolveHdr}</div>`+G.offerShow.map(o=>{
-      const c=o.card;
-      const col = c.axis==='R' ? 'var(--verdigris)' : `var(${SUIT_VAR[c.suit]})`;
-      const isP = c.dur==='PERSIST';
-      const bs = isP
-        ? `background:${col};color:#101720;border-color:${col};font-weight:700`
-        : `background:rgba(0,0,0,.35);color:${col};border-color:${col}`;
-      const tag = o.st==='placed' ? T().tagPlanted
-                : o.st==='win'    ? T().tagFired
-                : o.st==='lose'   ? T().tagReturned : T().tagOffered;
-      return `<div class="offitem ${o.st}">
-        <div class="who" style="color:${o.col||'var(--ink)'}">${o.who}</div>
-        <div class="body" style="${bs}">${condLabel(c)}・${durLabel(c)}</div>
-        <div class="tag">${tag}</div>
-      </div>`;
-    }).join('') + (G.showClose
-      ? `<div class="closewrap"><button class="btn" id="offerCloseBtn">${T().close}</button>
-         <span class="hint">Enter</span></div>` : '')
-      + `</div>`
-      + (G.changeBanner ? `<div class="changebanner">${G.changeBanner}</div>` : '')
-      + (G.explain ? `<div class="expl">${G.explain}</div>` : '');
+    st.innerHTML =
+        (G.changeBanner ? `<div class="changebanner">${G.changeBanner}</div>` : '')
+      + (G.explain ? `<div class="expl">${G.explain}</div>` : '')
+      + (G.showClose
+          ? `<div class="closewrap"><button class="btn" id="offerCloseBtn">${T().close}</button>
+             <span class="hint">Enter</span></div>` : '');
     document.getElementById('table').appendChild(st);
+  }
+
+  // 応変魔術のフキダシ（全員分・出していない人も空で表示）
+  center.querySelectorAll('.obub').forEach(e=>e.remove());
+  document.querySelectorAll('.seat.leadglow').forEach(e=>e.classList.remove('leadglow'));
+  center.classList.toggle('offering', !!(G.bubbles&&G.bubbles.length));
+  if(G.bubbles){
+    for(const b of G.bubbles){
+      const div=document.createElement('div');
+      div.className=`obub at-${b.pos} ${b.st}`;
+      const col=b.col||'#3B4757';
+      const body = b.card
+        ? condSVG(b.card, 32)
+        : `<span class="none">${T().obNone}</span>`;
+      div.innerHTML =
+          (b.pos==='n'||b.pos==='c' ? `<div class="nm" style="color:${col}">${b.who}</div>` : '')
+        + `<div class="bx" style="border-color:${col}">${body}</div>`
+        + (b.tag ? `<div class="tag">${b.tag}</div>` : '')
+        + (b.pos!=='n'&&b.pos!=='c' ? `<div class="nm" style="color:${col}">${b.who}</div>` : '');
+      center.appendChild(div);
+    }
+    if(G.leadGlow!==null && G.leadGlow!==undefined){
+      const el=document.getElementById(SEAT_EL[POS[G.leadGlow]]);
+      if(el) el.classList.add('leadglow');
+    }
   }
 
   // 出札
   center.querySelectorAll('.played').forEach(e=>e.remove());
   for(const e of G.trickCards){
     const pos=POS[e.player];
-    const isW=G.winnerThisTrick===e.player&&G.trickCards.length===4;
+    const isW=G.winnerThisTrick===e.player&&G.trickCards.length===NPLAYER;
     const tr=G.trump.value!==null&&e.card.s===G.trump.value;
     const div=document.createElement('div');
     div.className=`played pos-${pos} ${isW?'winner':''} ${e.fresh?'enter-'+pos:''}`;
@@ -2761,7 +3154,7 @@ function render(){
 /* 座席位置に吹き出しを出す。ms 経過後に自動で消える */
 /* フェイズ案内。orders は [{label, seq:[playerIndex,...]}, ...] */
 let SKIP_PHASE = false;
-function phaseDialog(title, msg, sub, orders){
+function phaseDialog(title, msg, sub, orders, showFlow){
   if(SKIP_PHASE) return Promise.resolve();
   return new Promise(res=>{
     const dlg=document.getElementById('phasedlg');
@@ -2771,13 +3164,29 @@ function phaseDialog(title, msg, sub, orders){
     document.getElementById('phSub').innerHTML=sub||'';
     const oe=document.getElementById('phOrder');
     oe.innerHTML=(orders||[]).map(o=>
-      (o.label?`<div class="ph-round">${o.label}</div>`:'')+
-      `<div class="ph-order">`+
+      (o.label?`<div class="ph-round">${o.label}${o.note?`<span class="nt">${o.note}</span>`:''}</div>`:'')+
+      `<div class="ph-order${o.lead?' isLead':''}">`+
       o.seq.map((p,i)=>
         `${i?'<span class="arw">→</span>':''}`+
-        `<span class="pchip" style="color:${PCOL[p]};border-color:${PCOL[p]}">${NAMES[p]}</span>`
+        `<span class="pchip" style="color:${PCOL[p]};border-color:${PCOL[p]}">`
+        +`<span class="ix">${i+1}</span>${NAMES[p]}</span>`
       ).join('')+`</div>`
     ).join('');
+    // この戦の流れ（戦開始時のみ）
+    const fl=document.getElementById('phFlow');
+    if(fl){
+      if(showFlow){
+        const t2=T();
+        const steps = Array.isArray(showFlow) ? showFlow
+                    : ((typeof t2.phFlow==='function')?t2.phFlow():[]);
+        document.getElementById('phFlowSum').textContent = (showFlow===true)?t2.phFlowSum:(t2.phPlaceSum||t2.phFlowSum);
+        document.getElementById('phFlowBody').innerHTML = steps.map((st,i)=>
+          `<div class="phstep"><div class="no">${i+1}</div>`
+          +`<div class="tx"><b>${st.t}</b>　${st.d}<span class="wy">${st.w}</span></div></div>`
+        ).join('');
+        fl.className='phflow on'; fl.open=false;
+      } else { fl.className='phflow'; fl.open=false; }
+    }
     const btn=document.getElementById('phBtn');
     btn.textContent=T().phOk;
     const cb=document.getElementById('phSkip');
@@ -2849,7 +3258,7 @@ function renderRoster(){
       <div class="nm" style="color:${PCOL[p]}">${i+1}. ${NAMES[p]}
         <span class="tags">${tags.join('')}</span></div>
       <div class="sc">${M.total[p]}${bidTag?'　'+bidTag:''}</div>
-      <div class="conds">${conds.map(miniChip).join('')}${G.spent[p]?`<span class="mini" style="border-color:#5F6B78;color:#5F6B78">${T().used}</span>`:''}</div>
+      <div class="conds">${conds.map(miniChip).join('')}${G.spent[p]>=MAXFIRE()?`<span class="mini" style="border-color:#5F6B78;color:#5F6B78">${T().used}</span>`:(G.spent[p]?`<span class="mini" style="border-color:#7A6A3A;color:#B79A4E">${T().usedN(G.spent[p],MAXFIRE())}</span>`:'')}</div>
       ${act?`<div class="act">${act}</div>`:''}
     </div>`;
   }).join('');
@@ -2935,7 +3344,7 @@ function renderBidPick(done, sum){
   const note = done.length
     ? T().bidTaken(done.map(q=>NAMES[q]+' '+G.bids[q]).join('　'), sum)
     : T().bidFirst;
-  const sc=b=>(NPLAYER===3 ? (b>=12?SCORE_3[12]:SCORE_3[b]) : (b>=10?[10,7,2]:SCORE_T[b]));
+  const sc=b=>(NPLAYER===3 ? (b>=12?SCORE_3[12]:SCORE_3[b]) : (b>=9?SCORE_T[9]:SCORE_T[b]));
   document.getElementById('prow').innerHTML=
     `<div style="width:100%"><div class="bidnote">${note}</div>
      <div class="bidbtns">${Array.from({length:16},(_,i)=>{
@@ -3029,10 +3438,10 @@ function applyLang(){
   set('startbtn', t.sStart); set('startrules', t.sRules);
   buildRounds();
   const ss=document.getElementById('sSpeed');
-  const spdVals=['2.6','1'];
+  const spdVals=['1.95','0.75'];
   if(ss && !ss.options.length){
     t.speeds.forEach((v,i)=>ss.add(new Option(v, spdVals[i])));
-    ss.value='2.6';
+    ss.value='0.75';                       // 既定は「高速」
   } else if(ss){ [...ss.options].forEach((o,i)=>o.textContent=t.speeds[i]); }
   roundsNote();
   clearToasts();
