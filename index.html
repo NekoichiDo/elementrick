@@ -3,13 +3,14 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>ElemenTrick ─ 試遊版</title>
+<title>ElemenTrick ─ 試遊版 Ver3</title>
 <style>
 /* ══════════════════════════════════════════════
    素材：藍の羅紗・胡桃の縁・生成りの札
    光：正＝真鍮 / 逆＝青磁 が卓に落ちる
    ══════════════════════════════════════════════ */
 :root{
+  --anim-scale:1;
   --felt:#243447;
   --felt-deep:#1B2836;
   --rail:#4A3828;
@@ -21,7 +22,7 @@
   --card-ink:#2B2620;
 
   --brass:#C9A227;
-  --verdigris:#CDD4DD;      /* 逆転＝銀 */
+  --verdigris:#CDD4DD;      /* 反理力＝銀 */
 
   --p0:#F2D64B;  /* A 黄     */
   --p1:#A578F0;  /* B 紫     */
@@ -247,6 +248,9 @@ button:focus-visible,[tabindex]:focus-visible{outline:2px solid var(--ivory);out
   align-items:flex-start;justify-content:center;padding:24px 16px;overflow-y:auto;
 }
 .helpveil.on{display:flex}
+/* 宣言フェイズの自動表示：背景を暗転・ぼかしせず、下の卓と手札をそのまま操作できる */
+.helpveil.soft{background:transparent;backdrop-filter:none;pointer-events:none}
+.helpveil.soft .helpbox{pointer-events:auto;box-shadow:0 14px 54px rgba(0,0,0,.85)}
 .helpbox{
   background:var(--felt-deep);border:1px solid var(--brass);border-radius:6px;
   max-width:760px;width:100%;box-shadow:0 12px 48px rgba(0,0,0,.7);
@@ -612,6 +616,31 @@ body[data-rank="R"] .table::after{opacity:1}
 .bidsum .ordlb:first-child{margin-top:0}
 .bidsum .oc{font-size:11px;font-weight:700;border:1px solid;border-radius:3px;padding:1px 5px}
 .bidsum .oa{color:var(--dim);font-size:10px}
+
+/* 得点表モーダル内のビッド操作欄 */
+.ptbid:empty{display:none}
+.ptbid{margin-top:14px;padding-top:14px;border-top:1px solid #33455A}
+.ptbid .bidnote{margin-bottom:8px}
+
+/* 総得点（卓の右上・横並び） */
+.totalscore{
+  grid-area:corner-b;align-self:start;justify-self:end;
+  margin:8px 8px 0 0;z-index:5;display:flex;align-items:stretch;
+  font-family:var(--mono);white-space:nowrap;
+  background:rgba(8,13,20,.72);border:1px solid rgba(244,237,222,.16);
+  border-radius:5px;overflow:hidden;
+}
+.totalscore .lb{
+  display:flex;align-items:center;padding:0 7px;
+  color:var(--muted);font-size:9.5px;letter-spacing:.06em;
+  background:rgba(244,237,222,.05);
+}
+.totalscore .col{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  min-width:30px;padding:3px 6px;border-left:1px solid rgba(244,237,222,.14);
+}
+.totalscore .nm{font-size:10px;font-weight:700;line-height:1.3}
+.totalscore .vl{font-size:14px;font-weight:700;color:var(--ivory);line-height:1.25}
 .lens{
   position:absolute;left:50%;top:66%;transform:translate(-50%,-50%);
   width:auto;min-width:210px;height:72px;border-radius:8px;
@@ -628,6 +657,46 @@ body[data-rank="R"] .table::after{opacity:1}
 .lens .tno{font-family:var(--mono);font-size:22px;font-weight:700;color:var(--ivory);line-height:1}
 .lens .tno .of{font-size:12px;color:var(--muted);margin-left:1px}
 .lens .sub.tlb{font-size:9.5px;letter-spacing:.06em}
+.lens .stackwrap{position:relative;display:flex;flex-direction:column;align-items:center;gap:2px}
+/* 土台：デフォルト状態。常に存在し、乗っている魔術がなければこれがそのまま見える */
+.lens .base{
+  width:38px;height:38px;border-radius:6px;
+  display:flex;align-items:center;justify-content:center;
+  background:rgba(255,255,255,.03);border:1px dashed rgba(244,237,222,.22);
+  color:var(--dim);font-family:var(--mincho);font-size:19px;font-weight:700;
+  position:relative;
+}
+.lens .base .lbl{position:absolute;bottom:-15px;font-family:var(--mono);font-size:8px;color:var(--dim);letter-spacing:.04em;white-space:nowrap}
+/* 魔術タイル：土台の上に重なって乗る */
+.lens .overlay{
+  position:absolute;inset:0;border-radius:6px;
+  display:flex;align-items:center;justify-content:center;
+  transition:transform calc(.3s*var(--anim-scale)) cubic-bezier(.2,.8,.3,1),opacity calc(.3s*var(--anim-scale));
+  box-shadow:0 3px 10px rgba(0,0,0,.5);
+}
+.lens .overlay.enter{transform:scale(.4) translateY(-10px);opacity:0}
+.cleanup{
+  position:absolute;left:50%;top:8px;transform:translateX(-50%);
+  z-index:5;white-space:normal;text-align:center;max-width:min(88%,360px);
+  font-family:var(--sans);font-size:10.5px;line-height:1.4;color:var(--warn);
+  background:rgba(8,13,20,.88);border:1px solid rgba(217,146,74,.4);border-radius:4px;
+  padding:5px 10px;opacity:0;transition:opacity .25s;pointer-events:none;
+}
+.cleanup.on{opacity:1}
+.cleanup.act{pointer-events:auto}
+.cleanup .closewrap{display:flex;align-items:center;justify-content:center;gap:7px;margin-top:6px}
+.cleanup .closewrap .btn{padding:4px 14px;font-size:11.5px}
+.cleanup .closewrap .hint{font-family:var(--mono);font-size:9.5px;color:var(--dim)}
+.lens .overlay.peel{
+  transform:translateY(-34px) rotate(-14deg) scale(.85) !important;
+  opacity:0 !important;
+  transition:transform calc(.55s*var(--anim-scale)) cubic-bezier(.4,0,.7,1),opacity calc(.55s*var(--anim-scale));
+}
+.lensfly{
+  position:fixed;z-index:50;pointer-events:none;
+  transition:transform calc(.4s*var(--anim-scale)) cubic-bezier(.3,.7,.3,1),opacity calc(.4s*var(--anim-scale));
+  transform:translate(0,0) scale(1);opacity:1;
+}
 .lens .kanji{
   font-family:var(--mincho);font-size:34px;line-height:1;font-weight:700;
   transition:color .5s;
@@ -635,6 +704,8 @@ body[data-rank="R"] .table::after{opacity:1}
 .lens .kanji.N{color:var(--brass)} .lens .kanji.Rv{color:var(--verdigris)}
 .lens .sub{font-family:var(--mono);font-size:10.5px;color:#B6C0CC;letter-spacing:.02em;line-height:1.35}
 .lens .trump{font-size:17px;line-height:1.1}
+.lens .base.tbase{font-family:var(--sans)}
+.lens .base.tbase .none{font-size:9px;color:var(--dim);font-family:var(--mono)}
 .lens .trump .none{color:var(--dim);font-size:9.5px;font-family:var(--mono);letter-spacing:.04em}
 .lens .trump .tsym{
   display:inline-flex;align-items:center;gap:2px;
@@ -664,7 +735,7 @@ body[data-rank="R"] .table::after{opacity:1}
 .played.winner{z-index:6}
 .played.winner .cardsvg,.played.winner svg{
   filter:drop-shadow(0 0 0 rgba(0,0,0,0));
-  animation:winpop .38s cubic-bezier(.2,.8,.3,1) forwards;
+  animation:winpop calc(.38s*var(--anim-scale)) cubic-bezier(.2,.8,.3,1) forwards;
 }
 @keyframes winpop{
   0%{transform:scale(1) translateY(0)}
@@ -672,10 +743,10 @@ body[data-rank="R"] .table::after{opacity:1}
   100%{transform:scale(1.10) translateY(-5px)}
 }
 /* 敗れた札を沈める */
-.played.loser{opacity:.42;transition:opacity .3s}
+.played.loser{opacity:.42;transition:opacity calc(.3s*var(--anim-scale))}
 /* 勝者の席へ吸い込む */
 .center.sweeping .played{
-  transition:transform .42s cubic-bezier(.5,0,.75,0), opacity .42s ease-in;
+  transition:transform calc(.42s*var(--anim-scale)) cubic-bezier(.5,0,.75,0), opacity calc(.42s*var(--anim-scale)) ease-in;
   opacity:0;
 }
 .center.sweeping .played.sw-n{transform:translateX(-50%) translateY(-150px) scale(.55)}
@@ -708,7 +779,7 @@ body[data-rank="R"] .table::after{opacity:1}
 .prompt .row{display:flex;gap:8px;flex-wrap:wrap;align-items:flex-start;margin-top:8px}
 .pool{display:flex;gap:6px;flex-wrap:wrap}
 
-/* ── 条件カード（SVG） ── */
+/* ── 魔力場操作カード（SVG） ── */
 .condwrap{position:relative;transition:transform .16s}
 .condwrap.sel{cursor:pointer}
 .condwrap.sel:hover{transform:translateY(-5px)}
@@ -776,9 +847,8 @@ details.logbox summary{
 .ptcol .v.n2{color:#6B6357;font-size:13px;font-weight:500}
 .ptcol .who{font-size:11px;line-height:1.35;padding:2px 0 3px;min-height:17px;
   font-family:var(--mono);letter-spacing:.02em;font-weight:700}
-.ptcol.mine{background:#F8DCE2}
-.ptcol.mine .b{background:#F0BCC7}
-.ptcol.taken{opacity:.42}
+.ptcol.owned{background:var(--oc-cell)}
+.ptcol.owned .b{background:var(--oc-head)}
 
 /* ── 座席トースト（誰が何をしたか） ── */
 .seattoast{
@@ -832,11 +902,11 @@ details.logbox summary{
 .offerstrip .expl .ok{color:#79C08D}
 .offerstrip .expl .ng{color:var(--dim)}
 
-/* ── 応変魔術：全員分のフキダシ ── */
+/* ── 応変魔術：発動者と布石のフキダシ ── */
 .obub{
   position:absolute;z-index:11;
   display:flex;flex-direction:column;align-items:center;gap:3px;
-  animation:obubin .22s cubic-bezier(.2,.8,.3,1);
+  animation:obubin calc(.22s*var(--anim-scale)) cubic-bezier(.2,.8,.3,1);
 }
 @keyframes obubin{from{opacity:0;transform:translateY(6px) scale(.94)}to{opacity:1}}
 .obub .bx{
@@ -883,7 +953,7 @@ details.logbox summary{
   transition:box-shadow .3s;
 }
 
-/* ── リアクティブ判断ポップアップ（手札の直上） ── */
+/* ── 応変魔術判断ポップアップ（手札の直上） ── */
 .reactpop{
   position:absolute;left:50%;bottom:132px;transform:translateX(-50%);z-index:9;
   background:rgba(8,13,20,.95);border:1px solid var(--warn);
@@ -898,10 +968,22 @@ details.logbox summary{
 .reactpop .rq{font-size:14px;font-weight:600;letter-spacing:.02em;white-space:nowrap}
 .reactpop .rh{font-family:var(--mono);font-size:11px;color:var(--muted);line-height:1.55;white-space:nowrap}
 .reactpop .rh b{color:var(--warn);font-weight:600}
+.reactpop .rnow{
+  display:flex;flex-direction:column;gap:4px;white-space:nowrap;
+  padding:7px 11px;border:1px solid #3A4A5E;border-radius:5px;
+  background:rgba(244,237,222,.045);font-family:var(--mono);
+}
+.reactpop .rnow .nlb{
+  color:var(--muted);font-size:9.5px;letter-spacing:.08em;margin-bottom:1px;
+}
+.reactpop .rnow .ln{display:flex;align-items:baseline;gap:7px}
+.reactpop .rnow .k{color:var(--dim);font-size:10px;min-width:44px}
+.reactpop .rnow .v{font-size:13px;font-weight:700;line-height:1.2}
+.reactpop .rnow .sub{color:var(--muted);font-size:10px}
 .reactpop .rrow{display:flex;gap:9px;align-items:center}
 .reactpop .btn{padding:12px 18px;font-size:13px;white-space:nowrap}
 
-/* ── リアクティブ解決の可視化 ── */
+/* ── 応変魔術解決の可視化 ── */
 body[data-resolve="1"] .seat .plate,
 body[data-resolve="1"] .seat .minis,
 body[data-resolve="1"] .seat .leadmark,
@@ -961,6 +1043,7 @@ body[data-resolve="1"] .bidsum{
 .offitem.placed .who{color:var(--warn)}
 .offitem.placed .tag{color:var(--warn)}
 
+.ovr{font-size:11px;color:var(--warn);margin-top:2px;line-height:1.5}
 .changebanner{
   border:1px solid var(--brass);border-radius:4px;background:rgba(201,162,39,.10);
   padding:7px 16px;font-family:var(--mono);font-size:13px;
@@ -1072,6 +1155,7 @@ body[data-resolve="1"] .bidsum{
     <select id="speed" class="sel-mode">
       <option value="1.95"></option>
       <option value="0.75" selected></option>
+      <option value="2.925"></option>
     </select>
     <button class="btn" id="helpbtn"></button>
     <button class="btn" id="glossbtn"></button>
@@ -1096,7 +1180,7 @@ body[data-resolve="1"] .bidsum{
 
   <div class="startveil" id="startveil">
     <div class="startbox">
-      <h1 class="stitle">ElemenTrick</h1>
+      <h1 class="stitle">ElemenTrick<span style="font-size:13px;color:var(--brass);margin-left:12px;letter-spacing:.08em">Ver3</span></h1>
       <p class="stag" id="sTagline"></p>
       <div class="snote" id="sNote"></div>
       <div class="srow">
@@ -1159,6 +1243,19 @@ body[data-resolve="1"] .bidsum{
     </div>
   </div>
 
+  <div class="helpveil" id="ptveil">
+    <div class="helpbox">
+      <div class="helphead">
+        <h2 id="ptTitle"></h2>
+        <button class="btn" id="ptclose"></button>
+      </div>
+      <div class="helpbody">
+        <div class="paytable" id="paytableModal"></div>
+        <div class="ptbid" id="ptBidHost"></div>
+      </div>
+    </div>
+  </div>
+
   <div class="layout">
     <!-- 左：卓 -->
     <div class="colL">
@@ -1167,9 +1264,11 @@ body[data-resolve="1"] .bidsum{
           <div class="seat seat-n" id="seatN"></div>
           <div class="seat seat-w" id="seatW"></div>
           <div class="seat seat-e" id="seatE"></div>
+          <div class="totalscore" id="totalScore"></div>
           <div class="bidsum" id="bidSum"></div>
           <div class="center" id="center">
             <div class="lens" id="lens"></div>
+          <div class="cleanup" id="lensCleanup"></div>
           </div>
           <div class="seat seat-s" id="seatS"></div>
           <div id="resultHost"></div>
@@ -1177,7 +1276,7 @@ body[data-resolve="1"] .bidsum{
       </div>
 
       <div class="board" id="board"></div>
-      <div class="paytable" id="paytable"></div>
+      <button class="btn" id="ptRefBtn"></button>
     </div>
 
     <!-- 右：行動順のプレイヤー一覧 -->
@@ -1212,7 +1311,7 @@ ja:{
   title:'ElemenTrick', prov:'', rules:'ルール', glossary:'用語集', newMatch:'新しいマッチ',
   playersLabel:'人数', pl4:'4人', pl3:'3人',
   roundsLabel:'戦数', rounds:['1戦','2戦','3戦','4戦'],
-  speedLabel:'速度', speeds:['じっくり','高速'],
+  speedLabel:'速度', speeds:['じっくり','高速','ゆっくり'],
   close:'閉じる', pass:'出さない', record:'記録',
   suits:['水','火','地','風'],
   names:['A：あなた','B：ドラキュラ','C：オオカミ男','D：フランケン'],
@@ -1220,7 +1319,7 @@ ja:{
   nmHint:'空欄のままなら既定の名前を使います。',
   nmYou:'あなた',
   short:['A','B','C','D'],
-  dur:{P:'継続',T:'1T'}, flip:'逆転',
+  dur:{P:'継続',T:'1T'}, flip:'反理力',
   rowPlant:'布石',
   prov:'',
   sTagline:'勝利条件そのものが動き続けるトリックテイキング',
@@ -1238,7 +1337,7 @@ ja:{
   phStartS:'スタートプレイヤー（P1）は、この戦のドラフト・布石の起点となり、'
           +'トリック1で最初にカードを出します。戦ごとに1人ずつ移ります。',
   phDraftT:'ドラフト',
-  phDraftM:()=>`条件カード12枚から、<b>1枚ずつ順番に</b>取っていきます（各自${NHELD()}枚）。`,
+  phDraftM:()=>`魔力場操作カード12枚から、<b>1枚ずつ順番に</b>取っていきます（各自${NHELD()}枚）。`,
   phDraftS:'手札を見たうえで選びます。全員に公開されます。'
           +'先手から順に、この並びを3巡します。',
   phDraftR:[],
@@ -1261,20 +1360,19 @@ ja:{
      w:'他家の布石を見て、自分の宣言をどこに置くか決められます'}
   ],
   phFlow:()=>[
-    {t:'ドラフト', d:`条件カード12枚から1枚ずつ、各自${NHELD()}枚を取る`,
+    {t:'ドラフト', d:`魔力場操作カード12枚から1枚ずつ、各自${NHELD()}枚を取る`,
      w:'<b>なぜ</b>：勝敗の条件を変える手段を、先に確保するため。手札を見てから選べる。全員に公開される'},
     {t:'布石', d:'取った札のうち<b>1枚</b>を、1〜'+NTRICK+'のどのトリックで発動させるか決めて置く',
      w:'<b>なぜ</b>：そのトリックで<b>必ず</b>発動する予約。「第○トリックまでにこの状態を作る」という時間の設計ができる。同じ軸の応変魔術をそのトリックで封じる効果もある'},
     {t:'ビッド宣言', d:'自分が<b>何トリック勝つか</b>を宣言する（布石とは逆の順）',
      w:'<b>なぜ</b>：宣言した数にぴったり合わせるのが目的。多く取れば良いのではない。他プレイヤーと同じ数は選べないので、早く宣言するほど選択肢が広い'},
-    {t:'応変魔術', d:'各トリックの直前に、手元の札を出して条件を変えられる（'+'発動できるのは'+MAXFIRE()+'枚まで'+'）',
-     w:'<b>なぜ</b>：宣言に届かない／取りすぎそうなときの調整手段。他家の妨害にも使える。同時公開・撤回不可'},
+    {t:'応変魔術', d:'<b>前のトリックの勝者だけ</b>が、リードの前に手元の札を出して条件を変えられる（発動できるのは'+MAXFIRE()+'枚まで）',
+     w:'<b>なぜ</b>：宣言に届かない／取りすぎそうなときの調整手段。他家の妨害にも使える。<b>第1トリックでは誰も使えない</b>。撤回不可'},
     {t:'プレイ', d:NTRICK+'トリックを戦い、宣言との差で得点する',
      w:'<b>なぜ</b>：ぴったりなら高得点、±3以上で0点。<b>勝ちすぎないことも技術</b>'}
   ],
   usedN:(n,m)=>`${n}/${m} 使用`,
-  obNone:'出さない', obPlant:'布石', obFire:'発動', obLose:'優先権で敗れ手元へ', obBlocked:'布石により出せず',
-  hPriority:(lead,win)=>`同じ軸に複数が出たときは、<b>リードプレイヤーに近い順</b>で決まります。リードは <b>${lead}</b>。したがって <b>${win}</b> が優先され、発動します。敗れたカードは手元に戻り、また使えます。`,
+  obNone:'出さない', obPlant:'布石', obFire:'発動', obLose:'布石により出せず', obBlocked:'布石により出せず',
   phOrderLbl:'順番',
   ordDraft:'① カード取得', ordDraftN:()=>`この並びで${NHELD()}巡`,
   ordPlace:'② 布石', ordBid:'③ ビッド宣言', ordBidN:'逆順',
@@ -1285,8 +1383,8 @@ ja:{
   roundsNoteN:()=>`${NPLAYER}戦（全員が先手を1回ずつ務める）以外は、手番順の有利不利が発生します。`,
   lensHigh:'高い方が勝つ', lensLow:'低い方が勝つ', noTrump:'なし',
   trumpNoneSub:'元素の優位なし', trumpSub:e=>`${e}が他を上回る`,
-  sbRank:'理力', sbTrump:'切り札', sbTrick:'トリック', sbSum:'宣言の総和',
-  sbUnder:'余る', sbOver:'足りない', sbEven:'ちょうど',
+  sbRank:'理力', sbTrump:'元素活性', sbTrick:'トリック', sbSum:'宣言の総和',
+  sbUnder:'余る', sbOver:'足りない', sbEven:'ちょうど', baseLbl:'既定',
   sumExp:(T,S,D)=> D<0
     ? `<b>${-D}トリックが余ります。</b>誰も欲しがらない分を押し付け合う<b>譲り合い</b>の構図。`
     : D>0
@@ -1295,45 +1393,48 @@ ja:{
   kanjiHigh:'正', kanjiLow:'逆',
   legendLast:'継続', legend1T:'1T', legendOwner:'末尾の文字＝布石した人',
   ptTitle:'得点表', ptSub:'宣言 →', ptExact:'ぴったり', ptOff1:'±1', ptOff2:'±2', ptOwner:'宣言者',
+  tsLabel:'総得点', ptRefBtn:'得点表を見る', rnowLbl:'現在の条件',
   phase:{draft:'ドラフト順',place:'布石順',bid:'宣言順（P4→P1）',reactive:'プレイ順',play:'プレイ順',dealend:'結果'},
   tagP1:'P1', tagLead:'リード', tagTurn:'手番', used:'使用済', thinking:'考えています…',
   dealLabel:'DEAL',
   // プロンプト
-  qDraft:'条件カードを1枚取ってください',
+  qDraft:'魔力場操作カードを1枚取ってください',
   hDraft:n=>`ドラフト ${n}/12 ─ ${NHELD()}枚のうち1枚を布石、${NHELD()-1}枚を手元に。発動できるのは${MAXFIRE()}枚だけです。`,
   qPlace:'布石するカードを選び、トリックを指定してください',
-  hPlace1:'3枚のうち1枚を予約します。残り2枚が手元のリアクティブになります。',
+  hPlace1:'3枚のうち1枚を予約します。残り2枚が手元の応変魔術になります。',
   hPlace2:c=>`「${c}」を置くスロットをトラックから選んでください。`,
   qBid:'獲得トリック数を宣言してください',
   hBid:n=>`残り宣言者 ${n} 人。他プレイヤーと同じ数は選べません。ボタン下は「ぴったり/±1/±2」の得点です。±3以上は0点です。`,
   bidFirst:'あなたが最初の宣言者です。',
   bidTaken:(list,sum)=>`既に宣言：${list}　／　合計 ${sum}　（トリック総数は15）　─　同じ数は選べません`,
-  qReact:'条件カードを出しますか？（同時公開・撤回不可）',
-  hReact:'手札の上に選択肢が出ています。一度出すと取り消せません。優先権で敗れた場合は手元に戻ります。',
-  popQ:'条件カードを出しますか？',
+  qReact:'魔力場操作カードを出しますか？',
+  hReact:'あなたは前のトリックの勝者なので、リード前に条件を変えられます。一度出すと取り消せません。',
+  popQ:'魔力場操作カードを出しますか？',
   popState:(b,w,st)=>`宣言 ${b} ／ 獲得 ${w}　─　${st}`,
-  popOrder:o=>`優先順位　${o} &gt; 布石`,
   popLocked:a=>`${a} は布石で保護（出せない）`,
   needMore:n=>`あと ${n} 回勝ちたい`, needZero:'もう勝ちたくない', needOver:n=>`${n} 回 超過中`,
   qPlay:'カードを1枚プレイしてください',
   hPlayLead:'あなたがリードです。', hPlayFollow:s=>`リードスートは ${s}。`,
   hPlayBid:(b,w,st)=>`宣言 ${b}／獲得 ${w}（あと ${st}）　`,
-  qResolve:'条件カードの解決', hResolveShow:'出されたカードを、優先順位で解決します。',
+  qResolve:'魔力場操作カードの解決', hResolveShow:'出されたカードを解決します。',
+  qCleanup:'1T効果の除去',
   hResolveClose:'内容を確認したら「閉じる」を押してください（Enter キーでも閉じられます）。',
   aiThinking:'AIが宣言を検討しています…',
   qDealEnd:'ラウンドが終了しました', qMatchEnd:'マッチが終了しました',
   // 解決パネル
   resolveHdr:'解決', tagPlanted:'布石・保護', tagFired:'発動', tagReturned:'手元へ戻る', tagOffered:'出した',
-  explBoth:'<b>ランクの条件と切り札の条件は別の種類なので効果は重複せず、いずれも発動します。</b>',
+  explBoth:'<b>理力の条件と元素活性の条件は別の種類なので効果は重複せず、いずれも発動します。</b>',
   explLocked:(ax,c)=>`${ax}：<b>布石が保護されている</b>ため、同じ種類のカードは出せません。<span class="ok">布石の ${c} のみ発動</span>します。`,
   explPlanted:(ax,c)=>`${ax}：<span class="ok">布石の ${c} が発動</span>します（保護のため上書きされません）。`,
-  explWinLose:(ax,w,c,l)=>`${ax}：<b>同じ種類なので効果は重複しません。</b>優先順位により <span class="ok">${w} の ${c} のみ発動</span>し、<span class="ng">${l} のカードは手元に戻ります</span>。`,
   explWin:(ax,w,c)=>`${ax}：<span class="ok">${w} の ${c} が発動</span>します。`,
-  explNoChange:'ただし<b>実効値は変わりません</b>（逆転の重ねがけ、または同じ切り札の指定）。カードの所有だけが移動します。',
-  axName:{R:'ランクの条件',T:'切り札の条件'},
-  bnRank:'ランク', bnTrump:'切り札', bnNone:'なし',
+  explNoChange:'ただし<b>実効値は変わりません</b>（すでに反理力、または同じ元素活性の指定）。カードの置き換えだけが起こります。',
+  axName:{R:'理力の条件',T:'元素活性の条件'},
+  bnRank:'理力', bnTrump:'元素活性', bnNone:'なし',
   bnHigh:'正（高い方が勝つ）', bnLow:'逆（低い方が勝つ）',
   bnSame:'<span style="color:var(--muted)">条件は同じまま（所有だけが移動）</span>',
+  ovrNote:ax=>`このトリックだけ。次のトリックからは、${ax}は既定の状態（正／元素活性なし）に戻ります`,
+  ovrSame:'（今だけ内容が同じ）',
+  cleanupNote:ax=>`${ax}：1Tのみの効果なので除去され、既定の状態に戻ります`,
   // トースト
   tGot:c=>`<em>${c}</em> を獲得しました`,
   tPlant:(t,c)=>`トリック <em>${t}</em> に <em>${c}</em> を布石しました`,
@@ -1346,7 +1447,7 @@ ja:{
   aBid:n=>`<em>${n}</em> トリックを宣言`,
   aOffer:c=>`<em>${c}</em> を出す`,
   aFired:c=>`<em>${c}</em> が<span style="color:#79C08D">発動</span>`,
-  aLost:c=>`<em>${c}</em> は優先権で敗れ<span style="color:var(--dim)">手元へ</span>`,
+  aLost:c=>`<em>${c}</em> は布石に阻まれ<span style="color:var(--dim)">手元へ</span>`,
   aPlay:c=>`<em>${c}</em> をプレイ`,
   aWin:(c,st)=>`<em>${c}</em> でトリック獲得（${st}）`,
   // 結果
@@ -1364,7 +1465,7 @@ ja:{
   lTrick:(n,p)=>`トリック ${n}　リード：${p}`,
   lPlantFire:c=>`▶ 布石 ${c} が発動（保護）`,
   lFire:(p,c)=>`▶ ${p} が ${c} を発動`,
-  lLost:(p,c)=>`　${p} は ${c} を出すも優先権で敗れ、手元に戻る`,
+  lLost:(p,c)=>`　${p} は ${c} を出すも布石に阻まれ、手元に戻る`,
   lWin:(n,p,c)=>`＝ T${n} 勝者：${p}（${c}）`,
   lDealEnd:(n,rows)=>`第${n}戦 終了　${rows}`,
   tkBid:(p,n)=>`${p} が ${n} を宣言`,
@@ -1373,7 +1474,7 @@ ja:{
   tkPlant:c=>`布石：${c}`,
   tkWin:(n,p)=>`T${n}：${p} が獲得`,
   tkChange:s=>'条件が変化：'+s,
-  tkNoChange:'条件カードは発動したが、実効値は変わらず',
+  tkNoChange:'魔力場操作カードは発動したが、実効値は変わらず',
   helpTitle:'ElemenTrick ─ ルール', glossTitle:'用語集',
   helpBody:`
 
@@ -1439,11 +1540,11 @@ ja:{
             たとえば {{s0}}水 がリードなら、{{s1}}火15 より {{s0}}水3 の方が勝ちます。</p>
             <p class="ex">例：水5（リード）→ 水12 → 火15 → 水3　→　勝つのは <b>水12</b></p>
 
-            <h4>切り札＝そのスートだけ特別に強くなる</h4>
-            <p>「切り札は{{s1}}火」と決まっている場合、<b>火はどのスートよりも強く</b>なります。
+            <h4>元素活性＝そのスートだけ特別に強くなる</h4>
+            <p>「元素活性は{{s1}}火」と決まっている場合、<b>火はどのスートよりも強く</b>なります。
             基準のスートを持っていない人が火を出せば、それだけで勝てます。</p>
-            <p class="ex">例：切り札 火 で 水5（リード）→ 水12 → 火15 → 水3　→　勝つのは <b>火15</b></p>
-            <p>切り札が決まっていない状態（切り札なし）もあります。</p>
+            <p class="ex">例：元素活性 火 で 水5（リード）→ 水12 → 火15 → 水3　→　勝つのは <b>火15</b></p>
+            <p>元素活性が指定されていない状態（元素活性なし）もあります。</p>
 
             <h4>次のリードは、そのトリックに勝った人</h4>
             <p>勝った人が次のトリックの最初のカードを出します。
@@ -1455,60 +1556,59 @@ ja:{
         </details>
 
         <h3>このゲームの特徴</h3>
-        <p>ふつうのトリックテイキングでは「数字が大きい方が勝つ」「切り札は火」といった条件は
+        <p>ふつうのトリックテイキングでは「数字が大きい方が勝つ」「元素活性は火」といった条件は
         ゲーム中ずっと変わりません。このゲームでは、<b>その条件をプレイヤー自身が動かします。</b></p>
 
         <h3>2つの条件</h3>
         <div class="hgrid">
           <div class="hcell">
-            <div class="hct">ランクの条件</div>
+            <div class="hct">理力の条件</div>
             <div><b>正</b>：数字が大きい方が勝つ（最初の状態）<br>
                  <b>逆</b>：数字が小さい方が勝つ</div>
-            <div class="hsub">「逆転」カードで <b>今の状態がひっくり返ります</b>。
-              すでに逆なら、もう1枚出すと正に戻ります。</div>
+            <div class="hsub">「反理力」カードで <b>逆に置き換わります</b>。</div>
           </div>
           <div class="hcell">
-            <div class="hct">切り札の条件</div>
-            <div><b>なし</b>：切り札がない（最初の状態）<br>
+            <div class="hct">元素活性の条件</div>
+            <div><b>なし</b>：元素活性がない（最初の状態）<br>
                  <b>{{s0}}水 {{s1}}火 {{s2}}地 {{s3}}風</b>：そのスートが最強になる</div>
-            <div class="hsub">「切り札」カードで <b>指定したスートに置き換わります</b>。</div>
+            <div class="hsub">「元素活性」カードで <b>指定したスートに置き換わります</b>。</div>
           </div>
         </div>
         <p>この2つは<b>別々に動きます。</b>「数字が小さい方が勝つ、ただし火は最強」という状態もあります。</p>
 
-        <h3>条件カードは 1T と 継続 の2種類</h3>
+        <h3>魔力場操作カードは 1T と 継続 の2種類</h3>
         <ul>
-          <li><b>1T</b>：そのトリックだけ有効。終わると元（正・切り札なし）に戻ります</li>
-          <li><b>継続</b>：同じ種類の条件カードが次に発動するまで、ずっと有効です</li>
+          <li><b>1T</b>：そのトリックだけ有効。終わると元（正・元素活性なし）に戻ります</li>
+          <li><b>継続</b>：同じ種類の魔力場操作カードが次に発動するまで、ずっと有効です</li>
         </ul>
-        <p class="hnb">※ 同じ種類の条件カードが発動すると、それまでのカードは種類を問わず捨てられます。
-        つまり有効な条件カードは、ランク・切り札それぞれ常に1枚だけです。
+        <p class="hnb">※ 同じ種類の魔力場操作カードが発動すると、それまでのカードは種類を問わず捨てられます。
+        つまり有効な魔力場操作カードは、理力・元素活性それぞれ常に1枚だけです。
         継続効果のカードも、1T効果のカードが出た後は捨てられて初期状態の条件に戻ります。</p>
 
         <h3>1戦の流れ</h3>
         <ol class="hflow">
           <li><b>配札</b>　60枚を15枚ずつ配ります</li>
-          <li><b>ドラフト</b>　手札を見てから、12枚の条件カードを順番に1枚ずつ取ります（各自3枚）</li>
+          <li><b>ドラフト</b>　手札を見てから、12枚の魔力場操作カードを順番に1枚ずつ取ります（各自3枚）</li>
           <li><b>布石</b>　3枚のうち1枚を、1〜15のどのトリックで発動させるか決めて置きます（全員に公開）</li>
           <li><b>宣言</b>　自分が何トリック取るかを宣言します（<b>他の人と同じ数は選べません</b>）</li>
           <li><b>プレイ</b>　15トリックを戦います</li>
           <li><b>得点</b>　宣言した数と実際に取った数を照合します</li>
         </ol>
 
-        <h3>布石とリアクティブ</h3>
-        <p>取った3枚の条件カードは、次のように使い分けます。</p>
+        <h3>布石と応変魔術</h3>
+        <p>取った3枚の魔力場操作カードは、次のように使い分けます。</p>
         <ul>
           <li><b>布石（1枚）</b>　開始前に「このトリックで発動する」と予約。<b>必ず発動します</b></li>
-          <li><b>リアクティブ（2枚）</b>　プレイ中、好きなトリックで出せます。<b>発動できるのは1枚だけ</b>で、
+          <li><b>応変魔術（2枚）</b>　プレイ中、好きなトリックで出せます。<b>発動できるのは1枚だけ</b>で、
               残る1枚は使われずに終わります</li>
         </ul>
-        <p class="hnb">※ 布石が置かれているトリックには、<b>同じ種類の</b>リアクティブは出せません（保護されます）。
-        違う種類なら出せるので、たとえば「切り札 火 が布石されたトリックに、逆転を重ねる」ことは可能です。</p>
+        <p class="hnb">※ 布石が置かれているトリックには、<b>同じ種類の</b>応変魔術は出せません（保護されます）。
+        違う種類なら出せるので、たとえば「元素活性 火 が布石されたトリックに、反理力を重ねる」ことは可能です。</p>
 
-        <h3>リアクティブの解決</h3>
-        <p>各トリックの開始前、全員が<b>同時に</b>カードを出すか出さないかを選びます。
-        同じ種類のカードが重なった場合は、<b>リードプレイヤーに近い人だけが発動</b>します。</p>
-        <p>負けた人のカードは<b>手元に戻る</b>ので、次のトリック以降でまた出せます。損はしません。</p>
+        <h3>応変魔術の解決</h3>
+        <p><b>前のトリックの勝者だけ</b>が、リードの前に応変魔術を出すか出さないかを選べます。
+        第1トリックでは前のトリックが存在しないため、誰も使えません。</p>
+        <p>布石で保護されている軸には出せません。それ以外はそのまま発動します。</p>
 
         <h3>得点</h3>
         <p>ぴったり合えば満額、1つずれれば部分点、2つずれても少し入ります。<b>3つ以上ずれると0点</b>です。</p>
@@ -1521,29 +1621,29 @@ ja:{
 
         <h3>画面の見かた</h3>
         <ul class="hui">
-          <li><b>卓の中央の丸</b>　今の条件。「正／逆」と切り札スートが出ます。卓の光の色も変わります</li>
+          <li><b>卓の中央の丸</b>　今の条件。「正理力／反理力」と元素活性のスートが出ます。卓の光の色も変わります</li>
           <li><b>卓の下の帯</b>　15トリックのトラック。布石されたカードと、そのトリックの勝者が並びます</li>
           <li><b>その下の表</b>　得点表。誰がどの数を宣言したかも表示されます</li>
           <li><b>右の一覧</b>　行動順に並んだプレイヤー。手番と直前の行動が分かります</li>
-          <li><b>塗りつぶし／枠のみ</b>　条件カードの継続／1T の区別です</li>
+          <li><b>塗りつぶし／枠のみ</b>　魔力場操作カードの継続／1T の区別です</li>
         </ul>
 
 
       `,
   glossBody:`
 
-            <div class="glcat">条件カードの読み方</div>
+            <div class="glcat">魔力場操作カードの読み方</div>
             <div class="cardguide">
               <div class="cg">{{card:R,TEMP}}{{card:R,PERSIST}}</div>
               <div class="cgtxt">
-                <b>逆転</b>のカード。ランクの強弱を今の状態からひっくり返します。<br>
+                <b>反理力</b>のカード。理力の条件を「逆」にします。<br>
                 カード下部の印が効果の長さです。<br>
                 {{dot}} <span class="mk">1T</span>＝このトリックだけ　／　
                 {{bar}} <span class="mk">継続</span>＝次に同じ種類のカードが出るまで
               </div>
               <div class="cg">{{card:T,TEMP,1}}{{card:T,PERSIST,1}}</div>
               <div class="cgtxt">
-                <b>切り札</b>のカード。描かれたスートを切り札にします。<br>
+                <b>元素活性</b>のカード。描かれたスートを元素活性にします。<br>
                 印の意味は同じです（{{dot}} <span class="mk">1T</span> ／ {{bar}} <span class="mk">継続</span>）。
               </div>
               <div class="cg" style="align-items:center">
@@ -1559,29 +1659,28 @@ ja:{
             <dl class="gl">
               <dt>トリック</dt><dd>全員が1枚ずつ出して、最も強いカードを出した人が引き取る1回ぶんの勝負。このゲームでは1戦につき15回行います。</dd>
               <dt>スート</dt><dd>カードの種類。四元素の {{s0}}水・{{s1}}火・{{s2}}地・{{s3}}風 の4種。</dd>
-              <dt>ランク</dt><dd>カードの数字。1〜15。</dd>
+              <dt>理力</dt><dd>カードの数字。1〜15。</dd>
               <dt>リード</dt><dd>そのトリックで最初にカードを出すこと。またはその人（リードプレイヤー）。出したカードのスートが、そのトリックの基準になります。</dd>
               <dt>フォロー</dt><dd>リードされたスートを持っていたら必ず同じスートを出すこと。持っていなければ何を出しても構いません。</dd>
-              <dt>切り札</dt><dd>他のどのスートよりも強くなるスート。フォローできない人が出せば、それだけで勝てます。</dd>
-              <dt>ボイド</dt><dd>あるスートを1枚も持っていない状態。切り札を出すチャンスになります。</dd>
+              <dt>元素活性</dt><dd>他のどのスートよりも強くなるスート。フォローできない人が出せば、それだけで勝てます。</dd>
+              <dt>ボイド</dt><dd>あるスートを1枚も持っていない状態。元素活性を出すチャンスになります。</dd>
               <dt>ビッド／宣言</dt><dd>自分が何トリック勝つかを、プレイ開始前に数字で申告すること。</dd>
               <dt>ディーラー</dt><dd>カードを配る役。このゲームでは自動で処理されます。</dd>
             </dl>
 
             <div class="glcat">このゲーム独自の用語</div>
             <dl class="gl">
-              <dt>条件カード</dt><dd>勝敗の条件を変えるカード。全12枚。ドラフトで各自3枚を取ります。</dd>
-              <dt>ランクの条件</dt><dd>「正（数字が大きい方が勝つ）」と「逆（小さい方が勝つ）」の2状態。<b>逆転</b>カードで切り替わります。</dd>
-              <dt>切り札の条件</dt><dd>「なし」または水・火・地・風のいずれか。<b>切り札</b>カードで指定したスートに置き換わります。</dd>
-              <dt>正／逆</dt><dd>ランクの条件の現在の状態。卓の中央に表示され、卓に落ちる光の色も変わります（正＝金／逆＝銀）。</dd>
-              <dt>逆転</dt><dd>ランクの条件を<b>今の状態からひっくり返す</b>カード。すでに逆なら、もう1枚出すと正に戻ります。</dd>
-              <dt>1T</dt><dd>そのトリックだけ有効な条件カード。トリックが終わると初期状態（正・切り札なし）に戻ります。</dd>
-              <dt>継続</dt><dd>同じ種類の条件カードが次に発動するまで有効。カード面では塗りつぶしで表されます。</dd>
-              <dt>ドラフト</dt><dd>手札を見た後、12枚の条件カードを順番に1枚ずつ取っていくフェイズ。全員に公開されます。</dd>
+              <dt>魔力場操作カード</dt><dd>勝敗の条件を変えるカード。全12枚。ドラフトで各自3枚を取ります。</dd>
+              <dt>理力の条件</dt><dd>「正理力（数字が大きい方が勝つ）」と「反理力（小さい方が勝つ）」の2状態。最初は正理力で、<b>反理力</b>カードが場にあるあいだだけ反理力になります。</dd>
+              <dt>元素活性の条件</dt><dd>「なし」または水・火・地・風のいずれか。<b>元素活性</b>カードで指定したスートに置き換わります。</dd>
+              <dt>正理力／反理力</dt><dd>理力の条件の現在の状態。卓の中央に表示され、卓に落ちる光の色も変わります（正理力＝金／反理力＝銀）。</dd>
+              <dt>反理力</dt><dd>理力の条件を<b>反理力にする</b>カード。場にあるあいだ、理力が小さい方が勝ちます。すでに反理力でも、結果は反理力のままです。</dd>
+              <dt>1T</dt><dd>そのトリックだけ有効な魔力場操作カード。トリックが終わると初期状態（正・元素活性なし）に戻ります。</dd>
+              <dt>継続</dt><dd>同じ種類の魔力場操作カードが次に発動するまで有効。カード面では塗りつぶしで表されます。</dd>
+              <dt>ドラフト</dt><dd>手札を見た後、12枚の魔力場操作カードを順番に1枚ずつ取っていくフェイズ。全員に公開されます。</dd>
               <dt>布石</dt><dd>取った3枚のうち1枚を、開始前に「このトリックで発動する」と決めて置くこと。必ず発動します。</dd>
-              <dt>リアクティブ</dt><dd>手元に残した条件カード。プレイ中の好きなトリックで出せます。発動できるのは1枚だけです。</dd>
-              <dt>保護</dt><dd>布石が置かれたトリックでは、<b>同じ種類の</b>リアクティブを出せないこと。違う種類なら重ねられます。</dd>
-              <dt>優先権</dt><dd>同じ種類のカードが重なったときの解決順。リードプレイヤーに近い人が優先されます。負けた人のカードは手元に戻ります。</dd>
+              <dt>保護</dt><dd>布石が置かれたトリックでは、<b>同じ種類の</b>応変魔術を出せないこと。違う種類なら重ねられます。</dd>
+              <dt>応変魔術</dt><dd><b>前のトリックの勝者だけ</b>が、リードの前に 1 枚出して条件を変えられます。第 1 トリックでは誰も使えません。</dd>
               <dt>トリックトラック</dt><dd>卓の下にある15マスの帯。布石されたカードと、各トリックの勝者が表示されます。</dd>
               <dt>戦</dt><dd>配札から15トリックまでの1区切り。1〜4戦を選べます。4戦を選ぶと全員が先手（P1）を1回ずつ務めます。</dd>
               <dt>P1</dt><dd>その戦の先手。トリック1でリードし、ドラフト・布石の起点になります。戦ごとに1人ずつ移ります。</dd>
@@ -1592,7 +1691,7 @@ en:{
   title:'ElemenTrick', prov:'', rules:'Rules', glossary:'Glossary', newMatch:'New Match',
   playersLabel:'Players', pl4:'4 players', pl3:'3 players',
   roundsLabel:'Rounds', rounds:['1 round','2 rounds','3 rounds','4 rounds'],
-  speedLabel:'Speed', speeds:['Deliberate','Fast'],
+  speedLabel:'Speed', speeds:['Deliberate','Fast','Slow'],
   close:'Close', pass:'Pass', record:'Log',
   suits:['Aqua','Fire','Earth','Wind'],
   names:['A: You','B: Dracula','C: Wolfman','D: Frankenstein'],
@@ -1600,7 +1699,7 @@ en:{
   nmHint:'Leave blank to use the default names.',
   nmYou:'You',
   short:['A','B','C','D'],
-  dur:{P:'LAST',T:'1T'}, flip:'FLIP',
+  dur:{P:'LAST',T:'1T'}, flip:'LOW',
   rowPlant:'Plant',
   prov:'(working title)',
   sTagline:'A trick-taking game where the winning conditions keep moving',
@@ -1648,14 +1747,13 @@ en:{
      w:'<b>Why</b>: it is a reservation that <b>always</b> fires on that trick. It lets you design when the board changes, and it also blocks reactive cards on the same axis for that trick'},
     {t:'Bidding', d:'Declare <b>how many tricks you will win</b> (in reverse of the plant order)',
      w:'<b>Why</b>: the goal is to land exactly on your number, not to take as many as possible. No two players may pick the same number, so bidding early means more choice'},
-    {t:'Reactive', d:'Before each trick you may play a held card to change the conditions ('+MAXFIRE()+' can ever fire)',
-     w:'<b>Why</b>: your adjustment when you are short of your bid or heading past it. It also works as interference. Revealed simultaneously, no take-backs'},
+    {t:'Reactive', d:'<b>Only the winner of the previous trick</b> may play a held card to change the conditions before leading ('+MAXFIRE()+' can ever fire)',
+     w:'<b>Why</b>: your adjustment when you are short of your bid or heading past it. It also works as interference. <b>Nobody can use it on trick 1.</b> No take-backs'},
     {t:'Play', d:'Play out '+NTRICK+' tricks; score on how close you land to your bid',
      w:'<b>Why</b>: exact is worth the most, and being off by 3 or more scores nothing. <b>Not winning is a skill too</b>'}
   ],
   usedN:(n,m)=>`${n}/${m} used`,
   obNone:'pass', obPlant:'Plant', obFire:'FIRES', obLose:'lost — returns to hand', obBlocked:'blocked by plant',
-  hPriority:(lead,win)=>`When two cards hit the same axis, the one <b>closest to the lead player</b> wins. The lead is <b>${lead}</b>, so <b>${win}</b> fires. The other returns to hand and can be used again.`,
   phOrderLbl:'Order',
   ordDraft:'1. Draft', ordDraftN:()=>`this order \u00d7 ${NHELD()}`,
   ordPlace:'2. Plant', ordBid:'3. Bidding', ordBidN:'reversed',
@@ -1667,7 +1765,7 @@ en:{
   lensHigh:'higher wins', lensLow:'lower wins', noTrump:'none',
   trumpNoneSub:'no element outranks', trumpSub:e=>`${e} beats the others`,
   sbRank:'Rank', sbTrump:'Trump', sbTrick:'Trick', sbSum:'Total bid',
-  sbUnder:'spare', sbOver:'short', sbEven:'exact',
+  sbUnder:'spare', sbOver:'short', sbEven:'exact', baseLbl:'default',
   sumExp:(T,S,D)=> D<0
     ? `<b>${-D} trick(s) to spare.</b> Nobody wants them — expect <b>passing them around</b>.`
     : D>0
@@ -1676,6 +1774,7 @@ en:{
   kanjiHigh:'HIGH', kanjiLow:'LOW',
   legendLast:'LAST', legend1T:'1T', legendOwner:'trailing letters = who planted it',
   ptTitle:'SCORING', ptSub:'bid →', ptExact:'exact', ptOff1:'off 1', ptOff2:'off 2', ptOwner:'bid by',
+  tsLabel:'TOTAL SCORE', ptRefBtn:'View scoring table', rnowLbl:'CURRENT',
   phase:{draft:'Draft order',place:'Plant order',bid:'Bid order (P4→P1)',reactive:'Play order',play:'Play order',dealend:'Result'},
   tagP1:'P1', tagLead:'LEAD', tagTurn:'TURN', used:'used', thinking:'thinking…',
   dealLabel:'ROUND',
@@ -1688,17 +1787,17 @@ en:{
   hBid:n=>`${n} player(s) still to bid. You cannot take a number someone else has. Under each button: exact / off 1 / off 2. Off by 3 or more scores zero.`,
   bidFirst:'You bid first.',
   bidTaken:(list,sum)=>`Already bid: ${list}　／　total ${sum}　(15 tricks in play)　─　no duplicate numbers`,
-  qReact:'Play a condition card? (simultaneous, no take-backs)',
-  hReact:'Your options are above your hand. Once played it cannot be withdrawn. If you lose priority it returns to your hand.',
+  qReact:'Play a condition card?',
+  hReact:'You won the previous trick, so you may change the conditions before leading. Once played it cannot be withdrawn.',
   popQ:'Play a condition card?',
   popState:(b,w,st)=>`Bid ${b} / won ${w}　─　${st}`,
-  popOrder:o=>`Priority　${o} &gt; plant`,
   popLocked:a=>`${a} locked by a plant`,
   needMore:n=>`${n} more to win`, needZero:'no more wins wanted', needOver:n=>`${n} over`,
   qPlay:'Play a card',
   hPlayLead:'You are on lead.', hPlayFollow:s=>`Led suit is ${s}.`,
   hPlayBid:(b,w,st)=>`Bid ${b} / won ${w} (${st})　`,
-  qResolve:'Resolving condition cards', hResolveShow:'Cards played are resolved by priority.',
+  qResolve:'Resolving condition cards', hResolveShow:'Resolving the card played.',
+  qCleanup:'Removing the 1T effect',
   hResolveClose:'Press Close when you have read it (Enter also works).',
   aiThinking:'AI is deciding its bid…',
   qDealEnd:'Round complete', qMatchEnd:'Match complete',
@@ -1706,13 +1805,15 @@ en:{
   explBoth:'<b>Rank and trump are different kinds, so they do not clash — both fire.</b>',
   explLocked:(ax,c)=>`${ax}: <b>locked by a plant</b>, so no card of this kind can be played. <span class="ok">Only the planted ${c} fires.</span>`,
   explPlanted:(ax,c)=>`${ax}: <span class="ok">the planted ${c} fires</span> (locked, so nothing overrides it).`,
-  explWinLose:(ax,w,c,l)=>`${ax}: <b>same kind, so they do not stack.</b> By priority, <span class="ok">only ${w}'s ${c} fires</span>; <span class="ng">${l} gets the card back</span>.`,
   explWin:(ax,w,c)=>`${ax}: <span class="ok">${w}'s ${c} fires</span>.`,
-  explNoChange:'The <b>effective state does not change</b> (a Flip on a Flip, or the same trump named again). Only ownership of the card moves.',
+  explNoChange:'The <b>effective state does not change</b> (already LOW, or the same trump named again). Only the card on the table is replaced.',
   axName:{R:'Rank',T:'Trump'},
   bnRank:'Rank', bnTrump:'Trump', bnNone:'none',
   bnHigh:'HIGH (higher wins)', bnLow:'LOW (lower wins)',
   bnSame:'<span style="color:var(--muted)">No change to the conditions (ownership only)</span>',
+  ovrNote:ax=>`Only for this trick. From the next trick, ${ax} resets to default (positive rank / no trump)`,
+  ovrSame:'(happens to match right now)',
+  cleanupNote:ax=>`${ax}: only lasted 1 trick, so it's removed and resets to default`,
   tGot:c=>`took <em>${c}</em>`,
   tPlant:(t,c)=>`planted <em>${c}</em> on trick <em>${t}</em>`,
   tBid:n=>`bid <em>${n}</em>`,
@@ -1723,7 +1824,7 @@ en:{
   aBid:n=>`bid <em>${n}</em>`,
   aOffer:c=>`played <em>${c}</em>`,
   aFired:c=>`<em>${c}</em> <span style="color:#79C08D">fires</span>`,
-  aLost:c=>`<em>${c}</em> lost priority, <span style="color:var(--dim)">back to hand</span>`,
+  aLost:c=>`<em>${c}</em> blocked by the plant, <span style="color:var(--dim)">back to hand</span>`,
   aPlay:c=>`played <em>${c}</em>`,
   aWin:(c,st)=>`took the trick with <em>${c}</em> (${st})`,
   rDealEnd:n=>`Round ${n} complete`, rMatchEnd:'Match complete',
@@ -1739,7 +1840,7 @@ en:{
   lTrick:(n,p)=>`Trick ${n}　lead: ${p}`,
   lPlantFire:c=>`▶ planted ${c} fires (locked)`,
   lFire:(p,c)=>`▶ ${p} fires ${c}`,
-  lLost:(p,c)=>`　${p} played ${c} but lost priority; returned to hand`,
+  lLost:(p,c)=>`　${p} played ${c} but it was blocked by the plant; returned to hand`,
   lWin:(n,p,c)=>`＝ T${n} won by ${p} (${c})`,
   lDealEnd:(n,rows)=>`Round ${n} complete　${rows}`,
   tkBid:(p,n)=>`${p} bids ${n}`,
@@ -1837,8 +1938,7 @@ en:{
             <div class="hct">Rank condition</div>
             <div><b>HIGH</b>: the higher number wins (starting state)<br>
                  <b>LOW</b>: the lower number wins</div>
-            <div class="hsub">A <b>Flip</b> card <b>reverses whatever is currently set</b>.
-              If it is already LOW, a second Flip puts it back to HIGH.</div>
+            <div class="hsub">A <b>LOW</b> card <b>sets it to LOW</b>.</div>
           </div>
           <div class="hcell">
             <div class="hct">Trump condition</div>
@@ -1878,13 +1978,12 @@ en:{
         </ul>
         <p class="hnb">※ A trick that has a Plant on it is <b>locked for that kind of condition</b> —
         no Reactive of the same kind can be played there. A different kind still can,
-        so you can, for example, stack a Flip onto a trick where someone planted Trump Fire.</p>
+        so you can, for example, stack a LOW onto a trick where someone planted Trump Fire.</p>
 
         <h3>Resolving Reactives</h3>
-        <p>Before each trick, all four players <b>simultaneously</b> choose to play a card or not.
-        If two cards of the same kind meet, <b>only the player closest to the lead fires</b>.</p>
-        <p>A card that loses out <b>returns to your hand</b> and can be played again later.
-        Nothing is wasted.</p>
+        <p><b>Only the winner of the previous trick</b> may choose to play a Reactive before leading.
+        On trick 1 there is no previous trick, so nobody may play one.</p>
+        <p>It can't be played on an axis locked by a Plant. Otherwise it simply fires.</p>
 
         <h3>Scoring</h3>
         <p>Exact gets full value, off by one pays a reduced amount, off by two pays a little.
@@ -1911,7 +2010,7 @@ en:{
             <div class="cardguide">
               <div class="cg">{{card:R,TEMP}}{{card:R,PERSIST}}</div>
               <div class="cgtxt">
-                A <b>Flip</b> card. It reverses whichever rank condition is currently set.<br>
+                A <b>LOW</b> card. It sets the rank condition to LOW.<br>
                 The mark at the bottom shows how long it lasts.<br>
                 {{dot}} <span class="mk">1T</span> = this trick only　/　
                 {{bar}} <span class="mk">LAST</span> = until the next card of the same kind
@@ -1946,17 +2045,16 @@ en:{
             <div class="glcat">Terms specific to this game</div>
             <dl class="gl">
               <dt>Condition card</dt><dd>A card that changes how tricks are won. 12 in total; each player drafts 3.</dd>
-              <dt>Rank condition</dt><dd>Either HIGH (higher number wins) or LOW (lower wins). Switched by a <b>Flip</b> card.</dd>
+              <dt>Rank condition</dt><dd>Either HIGH (higher number wins) or LOW (lower wins). It starts HIGH, and is LOW only while a <b>LOW</b> card is on the table.</dd>
               <dt>Trump condition</dt><dd>None, or one of Aqua / Fire / Earth / Wind. A <b>Trump</b> card replaces it with the named suit.</dd>
               <dt>HIGH / LOW</dt><dd>The current rank condition. Shown at the centre of the table; the light across the table also shifts (gold for HIGH, silver for LOW).</dd>
-              <dt>Flip</dt><dd>A card that <b>reverses whatever is currently set</b>. Already LOW? A second Flip returns it to HIGH.</dd>
+              <dt>LOW</dt><dd>A card that <b>sets the rank condition to LOW</b>. While it is on the table, the lower number wins. Playing one when it is already LOW leaves it LOW.</dd>
               <dt>1T</dt><dd>Active for one trick only. Afterwards the condition returns to its starting state (HIGH, no trump).</dd>
               <dt>LAST</dt><dd>Active until the next condition card of the same kind fires. Shown filled in on the card face.</dd>
               <dt>Draft</dt><dd>The phase where players take condition cards one at a time after seeing their hands. Fully open.</dd>
               <dt>Plant</dt><dd>Committing one of your three cards to a specific trick before play. It always fires.</dd>
-              <dt>Reactive</dt><dd>A condition card kept in hand, playable at any trick. Only one of your two will ever fire.</dd>
               <dt>Locked</dt><dd>A trick carrying a Plant will not accept a Reactive <b>of the same kind</b>. A different kind can still be stacked on.</dd>
-              <dt>Priority</dt><dd>The order used when cards of the same kind meet: the player closest to the lead wins out. The others get their cards back.</dd>
+              <dt>Reactive</dt><dd><b>Only the winner of the previous trick</b> may play one card to change the conditions before leading. Nobody can use it on trick 1.</dd>
               <dt>Trick track</dt><dd>The strip of 15 slots below the table, showing planted cards and the winner of each trick.</dd>
               <dt>Round</dt><dd>One deal through 15 tricks. Choose 1 to 4 per match; at 4 every player leads off once.</dd>
               <dt>P1</dt><dd>The first player of the round. Leads trick 1 and anchors the draft and plant order. Passes on each round.</dd>
@@ -2014,7 +2112,7 @@ const durLabel  = c => c.dur==='PERSIST' ? T().dur.P : T().dur.T;
 
 
 /* ═══════════════════════════════════════════════════════
-   SVG描画：プレイカード／裏面／条件カード
+   SVG描画：プレイカード／裏面／魔力場操作カード
    ═══════════════════════════════════════════════════════ */
 const SUIT_PATH = {
   0:'M 14.626,85.337 C 14.633,85.343 14.637,85.349 14.643,85.355 C 14.649,85.361 14.655,85.365 14.661,85.371 C 14.648,85.361 14.636,85.349 14.626,85.337 M 49.999,1.705e-13 C 22.385,1.705e-13 2.682e-07,22.384 2.682e-07,50.001 C 2.682e-07,63.798 5.589,76.291 14.626,85.337 C 5.624,76.316 5.633,61.703 14.643,52.692 C 23.664,43.671 38.289,43.671 47.307,52.688 C 56.326,61.709 56.326,76.334 47.306,85.354 C 38.296,94.368 23.678,94.370 14.660,85.370 C 23.707,94.411 36.199,100.001 49.999,99.999 C 77.607,99.999 99.999,77.608 99.999,50.000 C 99.999,22.384 77.612,1.705e-13 49.999,1.705e-13 M 77.025,28.429 C 73.838,31.614 68.674,31.614 65.485,28.430 C 62.300,25.242 62.300,20.076 65.488,16.889 C 68.675,13.704 73.839,13.704 77.025,16.889 C 80.210,20.077 80.210,25.243 77.025,28.429 M 82.283,40.194 C 80.400,38.313 80.400,35.257 82.283,33.382 C 84.166,31.501 87.218,31.501 89.097,33.382 C 90.980,35.257 90.980,38.313 89.097,40.194 C 87.219,42.075 84.167,42.075 82.283,40.194',
@@ -2131,9 +2229,16 @@ function readSpeed(){
   const el=document.getElementById('speed');
   const base = el ? parseFloat(el.value) : 0.75;
   SPD  = base;
-  // 「じっくり」(1.95) / 「高速」(0.75) の比を保ったまま、
-  // プレイ系は基準を上げて逆方向に振る（高速選択時でも通常よりゆっくり）
-  PSPD = base===0.75 ? 1.25 : 1.625;
+  // プレイ系（PSPD）は SPD とは別軸。
+  //   高速時 1.25 → 新デフォルト 1.875（1.5倍）
+  //   じっくり時 1.625 → 2.4375（1.5倍）
+  //   ゆっくり（新規）→ 高速の3倍 = 3.75
+  if(base===2.925)      PSPD = 3.75;    // ゆっくり
+  else if(base===0.75)  PSPD = 1.875;   // 高速（新デフォルト）
+  else                   PSPD = 2.4375; // じっくり
+  // CSS 側の動きの速さも同じ比率で連動させる（出札の登場アニメーションは対象外のまま固定）。
+  // PSPD は「高速=1」を基準にした相対値ではないため、高速時を 1 とした比率に正規化する。
+  document.documentElement.style.setProperty('--anim-scale', (PSPD/1.875).toFixed(4));
 }
 // 思考ラグ（ドラフト・布石・ビッド）
 const think  = ms => sleep(Math.round(ms*SPD));
@@ -2178,7 +2283,7 @@ function startDeal(){
     rank:{value:'N',holder:null,dur:null},
     trump:{value:null,holder:null,dur:null},
     tricksWon: zerosP(),
-    placedBy:{}, offerShow:null, changeBanner:null, showClose:false, explain:null,
+    placedBy:{}, offerShow:null, changeBanner:null, showClose:false, cleanupClose:false, explain:null,
     bubbles:null, leadGlow:null,
     order:[], turn:null, acts: allP().map(()=>''),
     played:[], trickCards:[], slotWinner:{},
@@ -2208,15 +2313,48 @@ function legalMoves(hand, leadSuit){
   const f = hand.filter(c=>c.s===leadSuit);
   return f.length ? f : hand.slice();
 }
+/* 宣言的モデル：カードは「状態の指定」であり、現在値を参照しない。
+   反理力カードが置かれれば、直前が何であれ結果は必ず反理力。
+   置き場からカードが除かれたときはデフォルト（正理力／元素活性なし）に戻る。 */
 function applyTo(ax, c){
   ax.holder=c; ax.dur=c.dur;
-  if(c.axis==='R') ax.value = (ax.value==='N')?'R':'N';
+  if(c.axis==='R') ax.value = 'R';
   else ax.value = c.suit;
 }
 function applyCond(c){ applyTo(c.axis==='R'?G.rank:G.trump, c); }
-function cleanupTrick(){
-  if(G.rank.dur==='TEMP'){G.rank.value='N';G.rank.holder=null;G.rank.dur=null;}
-  if(G.trump.dur==='TEMP'){G.trump.value=null;G.trump.holder=null;G.trump.dur=null;}
+/* 1T 効果の除去演出。
+   「除去されて下のデフォルト状態が現れる」ことを、剥がれるアニメーションと文字で示す。
+   持続に上書きされていた場合も、戻り先は必ずデフォルト（付録の確認より）。 */
+async function cleanupTrick(){
+  const goneR = G.rank.dur==='TEMP';
+  const goneT = G.trump.dur==='TEMP';
+  if(!goneR && !goneT) return;         // 1T が無ければ何もしない
+
+  const t=T();
+  const msgs=[];
+  if(goneR) msgs.push(t.cleanupNote(t.bnRank));
+  if(goneT) msgs.push(t.cleanupNote(t.bnTrump));
+  G.cleanupMsg = msgs.join('　／　');
+  render();                              // まずメッセージだけを反映して描画を確定させる
+  await sleep(30);                       // DOM 確定を1フレーム待つ
+  const lens=document.getElementById('lens');
+  if(lens){
+    if(goneR){ const o=lens.querySelector('.rankstack .overlay'); if(o) o.classList.add('peel'); }
+    if(goneT){ const o=lens.querySelector('.trumpstack .overlay'); if(o) o.classList.add('peel'); }
+  }
+  await pthink(650);
+
+  // デフォルトへ戻した状態を見せたうえで、「閉じる」を押すまで保持する
+  if(goneR){G.rank.value='N';G.rank.holder=null;G.rank.dur=null;}
+  if(goneT){G.trump.value=null;G.trump.holder=null;G.trump.dur=null;}
+  G.cleanupClose = true;
+  showPrompt(()=>setPrompt(T().qCleanup, T().hResolveClose));
+  render();
+  await waitHuman(); PROMPT_REDRAW=null;
+
+  G.cleanupClose = false;
+  G.cleanupMsg = null;
+  render(); await sleep(60);
 }
 // 布石保護（D-2 両軸）：そのトリックに同一軸の布石があれば出せない
 function blockedAxis(ax, t){
@@ -2291,7 +2429,7 @@ function aiPlay(p){
 }
 
 /* ═══════════════════════════════════════════════════════
-   AI：リアクティブ（宣言＋妨害）
+   AI：応変魔術（宣言＋妨害）
    ═══════════════════════════════════════════════════════ */
 function aiOffer(p){
   if(G.spent[p]>=MAXFIRE()) return null;
@@ -2422,7 +2560,7 @@ function rollout(me, myHand, bidsIn, samples){
     const pool=shuffle(pool0.slice());
     const hands=[null,null,null,null]; hands[me]=myHand.slice();
     let i=0; for(let q=0;q<NPLAYER;q++) if(q!==me){ hands[q]=pool.slice(i,i+NTRICK); i+=NTRICK; }
-    // リアクティブは各自1枚をランダムなトリックで発動すると仮定
+    // 応変魔術は各自1枚をランダムなトリックで発動すると仮定
     const fire={};
     for(let q=0;q<NPLAYER;q++){
       if(!reserveAll[q].length) continue;
@@ -2433,7 +2571,7 @@ function rollout(me, myHand, bidsIn, samples){
     let rv='N', tv=null, rd=null, td=null, lead=G.lead;
     const won=[0,0,0,0];
     for(let t=1;t<=NTRICK;t++){
-      // 条件適用（布石優先＝D-2、同軸のリアクティブは無効）
+      // 条件適用（布石優先＝D-2、同軸の応変魔術は無効）
       const usedAx={};
       for(const {t:tt,c} of placed) if(tt===t){ usedAx[c.axis]=1;
         if(c.axis==='R'){ rv = rv==='N'?'R':'N'; rd=c.dur; } else { tv=c.suit; td=c.dur; } }
@@ -2537,8 +2675,8 @@ async function runDeal(){
     await doReactive();
     await doPlay();
     await doResolve();
-    cleanupTrick();
-    G.trickCards=[]; G.winnerThisTrick=null;
+    await cleanupTrick();
+    G.trickCards=[]; G.winnerThisTrick=null; G.rankFresh=false; G.trumpFresh=false;
     render();
   }
   endDeal();
@@ -2662,17 +2800,26 @@ async function doReactive(){
   G.phase='reactive';
   logT(T().lTrick(G.trickNo, NAMES[G.lead]));
   const offers={};
-  for(let p=0;p<NPLAYER;p++) if(p!==HUMAN){const c=aiOffer(p); if(c)offers[p]=c;}
-
-  const open=G.reserve[HUMAN].filter(c=>!blockedAxis(c.axis,G.trickNo));
-  if(G.spent[HUMAN]<MAXFIRE()&&open.length){
-    const bl=['R','T'].filter(a=>blockedAxis(a,G.trickNo))
-      .map(a=>T().axName[a]);
-    showPrompt(()=>{ setPrompt(T().qReact, T().hReact); renderReactivePop(); });
-    const v=await waitHuman(); PROMPT_REDRAW=null;
-    clearReactivePop();
-    if(v.kind==='cond') offers[HUMAN]=v.card;
-  }else{ await pthink(160); }
+  // Ver2：応変を使えるのは「前トリックの勝者」＝現在のリードのみ。
+  // 第1トリックは前トリックが存在しないため、誰も使えない。
+  const actor = (G.trickNo>1) ? G.lead : null;
+  // 「出さない」フキダシは、出せる状態で見送ったときだけ意味を持つ。
+  // 撃ち切り済み・手元が空・布石で全軸が塞がれている場合は選択の余地がないので出さない。
+  const couldOffer = actor!==null
+    && G.spent[actor] < MAXFIRE()
+    && G.reserve[actor].some(c=>!blockedAxis(c.axis, G.trickNo));
+  if(actor!==null && actor!==HUMAN){
+    const c=aiOffer(actor); if(c) offers[actor]=c;
+    await pthink(160);
+  }else if(actor===HUMAN){
+    const open=G.reserve[HUMAN].filter(c=>!blockedAxis(c.axis,G.trickNo));
+    if(G.spent[HUMAN]<MAXFIRE()&&open.length){
+      showPrompt(()=>{ setPrompt(T().qReact, T().hReact); renderReactivePop(); });
+      const v=await waitHuman(); PROMPT_REDRAW=null;
+      clearReactivePop();
+      if(v.kind==='cond') offers[HUMAN]=v.card;
+    }else{ await pthink(160); }
+  }
 
   const placedHere = G.track[G.trickNo].slice();
   const offerList  = orderFrom(G.lead).filter(p=>offers[p]).map(p=>({p,card:offers[p]}));
@@ -2688,28 +2835,31 @@ async function doReactive(){
 
   clearToasts();
 
-  // ① 全員分のフキダシを同時に表示（出していない人は空）
+  // ① Ver2：使えるのは 1 人だけなので、その人のフキダシだけを出す
   const bub=[];
   for(const c of placedHere){
     bub.push({pos:'c', who:T().obPlant, card:c, st:'', col:'var(--warn)'});
   }
-  for(let q=0;q<NPLAYER;q++){
-    const o=offerList.find(x=>x.p===q);
-    bub.push({pos:POS[q], who:SHORT[q], card:o?o.card:null,
-              st:o?'':'pass', col:o?PCOL[q]:null, p:q});
+  {
+    const o = actor!==null ? offerList.find(x=>x.p===actor) : null;
+    if(o || couldOffer){
+      bub.push({pos:POS[actor], who:SHORT[actor], card:o?o.card:null,
+                st:o?'':'pass', col:o?PCOL[actor]:null, p:actor});
+    }
   }
   G.bubbles=bub; G.leadGlow=null;
   setPrompt(T().qResolve, T().hResolveShow);
   render();
   await pthink(offerList.length ? 1400 : 900);
 
-  // ② 優先順位で解決し、勝敗を表示
+  // ② 布石による保護の有無を判定し、発動／不発を表示
   const claimed={};
   for(const c of placedHere){
     claimed[c.axis]=c;
     log(T().lPlantFire(condName(c)),'ev');
   }
-  const conflicts=[];                       // 競合が起きた軸
+  // Ver2：応変は 1 枚しか出ないため競合は起こらない。
+  // 布石のある軸に出そうとした場合のみ弾かれる（保護）。
   for(const {p,card:c} of offerList){
     const bb = G.bubbles.find(x=>x.p===p);
     if(blockedAxis(c.axis,G.trickNo)){
@@ -2718,43 +2868,39 @@ async function doReactive(){
       log(T().lLost(NAMES[p], condName(c)));
       continue;
     }
-    if(!(c.axis in claimed)){
-      claimed[c.axis]=c;
-      G.reserve[p]=G.reserve[p].filter(x=>x.id!==c.id);
-      G.spent[p]=(G.spent[p]||0)+1;
-      if(bb){ bb.st='win'; bb.tag=T().obFire; }
-      G.acts[p]=T().aFired(condName(c));
-      log(T().lFire(NAMES[p], condName(c)),'ev');
-    }else{
-      if(bb){ bb.st='lose'; bb.tag=T().obLose; }
-      conflicts.push({axis:c.axis, loser:p});
-      G.acts[p]=T().aLost(condName(c));
-      log(T().lLost(NAMES[p], condName(c)));
-    }
-  }
-  // 競合が起きたら、リードを光らせて理由を説明する
-  if(conflicts.length){
-    G.leadGlow=G.lead;
-    const winners=conflicts.map(cf=>{
-      const w=offerList.find(o=>o.card.axis===cf.axis && claimed[cf.axis] && o.card.id===claimed[cf.axis].id);
-      return w?NAMES[w.p]:null;
-    }).filter(Boolean);
-    setPrompt(T().qResolve, T().hPriority(NAMES[G.lead], winners[0]||''), true);
+    claimed[c.axis]=c;
+    G.reserve[p]=G.reserve[p].filter(x=>x.id!==c.id);
+    G.spent[p]=(G.spent[p]||0)+1;
+    if(bb){ bb.st='win'; bb.tag=T().obFire; }
+    G.acts[p]=T().aFired(condName(c));
+    log(T().lFire(NAMES[p], condName(c)),'ev');
   }
   render();
-  await pthink(conflicts.length ? 1700 : (offerList.length>1 ? 1100 : 700));
+  await pthink(offerList.length ? 900 : 600);
 
   // ③ 適用し、状態の変化を明示
-  const before = {r:G.rank.value, t:G.trump.value};
+  const before = {r:G.rank.value, t:G.trump.value, rDur:G.rank.dur, tDur:G.trump.dur};
   G.track[G.trickNo]=[];
+  const plantedIds = new Set(placedHere.map(c=>c.id));
+  await flyToLens(claimed, plantedIds);
+  G.rankFresh = !!claimed.R; G.trumpFresh = !!claimed.T;
   for(const ax of ['R','T']) if(claimed[ax]) applyCond(claimed[ax]);
   const after = {r:G.rank.value, t:G.trump.value};
 
   const parts=[];
+  const noteR = (claimed.R && before.rDur==='PERSIST')
+    ? `<div class="ovr">${T().ovrNote(T().bnRank)}</div>` : '';
+  const noteT = (claimed.T && before.tDur==='PERSIST')
+    ? `<div class="ovr">${T().ovrNote(T().bnTrump)}</div>` : '';
   if(before.r!==after.r)
-    parts.push(`<span>${T().bnRank}</span><span class="arrow">${before.r==='N'?T().kanjiHigh:T().kanjiLow} →</span><span class="to" style="color:${after.r==='N'?'var(--brass)':'var(--verdigris)'}">${after.r==='N'?T().bnHigh:T().bnLow}</span>`);
+    parts.push(`<span>${T().bnRank}</span><span class="arrow">${before.r==='N'?T().kanjiHigh:T().kanjiLow} →</span><span class="to" style="color:${after.r==='N'?'var(--brass)':'var(--verdigris)'}">${after.r==='N'?T().bnHigh:T().bnLow}</span>${noteR}`);
   if(before.t!==after.t)
-    parts.push(`<span>${T().bnTrump}</span><span class="arrow">${before.t===null?T().bnNone:SUIT_SYM[before.t]} →</span><span class="to" style="color:${after.t===null?'var(--dim)':`var(${SUIT_VAR[after.t]})`}">${after.t===null?T().bnNone:SUIT_SYM[after.t]}</span>`);
+    parts.push(`<span>${T().bnTrump}</span><span class="arrow">${before.t===null?T().bnNone:SUIT_SYM[before.t]} →</span><span class="to" style="color:${after.t===null?'var(--dim)':`var(${SUIT_VAR[after.t]})`}">${after.t===null?T().bnNone:SUIT_SYM[after.t]}</span>${noteT}`);
+  // 実効値は変わらなくても、持続が 1T に奪われた場合は明示する
+  if(before.r===after.r && claimed.R && before.rDur==='PERSIST')
+    parts.push(`<span>${T().bnRank}</span><span class="to" style="color:var(--muted)">${T().ovrSame}</span>${noteR}`);
+  if(before.t===after.t && claimed.T && before.tDur==='PERSIST')
+    parts.push(`<span>${T().bnTrump}</span><span class="to" style="color:var(--muted)">${T().ovrSame}</span>${noteT}`);
 
   if(parts.length){
     G.changeBanner = parts.join('　／　');
@@ -2782,9 +2928,6 @@ async function doReactive(){
       lines.push(T().explLocked(axName[ax], condName(placed.card)));
     }else if(placed){
       lines.push(T().explPlanted(axName[ax], condName(placed.card)));
-    }else if(win && lost.length){
-      const names=lost.map(o=>o.who).join('・');
-      lines.push(T().explWinLose(axName[ax], win.who, condName(win.card), names));
     }else if(win){
       lines.push(T().explWin(axName[ax], win.who, condName(win.card)));
     }
@@ -2827,6 +2970,52 @@ async function doPlay(){
     G.trickCards.push({player:p,card,fresh:true});
     G.acts[p]=T().aPlay(SUIT_SYM[card.s]+card.r);
     G.turn=null; render();
+  }
+}
+
+
+/* 布石・応変フキダシ の位置から、レンズ（状態エリア）へ飛ぶ演出。
+   claimed[ax] のカードが実際にどのバブルから来たかを見つけ、その座標から飛ばす。 */
+async function flyToLens(claimed, plantedIds){
+  const cen=document.getElementById('center');
+  const lens=document.getElementById('lens');
+  if(!cen||!lens) return;
+  const lr=lens.getBoundingClientRect();
+  const flights=[];
+  for(const ax of ['R','T']){
+    const c=claimed[ax]; if(!c) continue;
+    const isPlant = plantedIds && plantedIds.has(c.id);
+    let box=null;
+    if(isPlant){
+      // 布石由来：発動元はトラックのマス
+      const slotEl=document.querySelector(`.slot[data-slot="${G.trickNo}"]`);
+      box = slotEl;   // マス全体を発射点にする
+    }else{
+      // 応変由来：発動元はフキダシ
+      if(!G.bubbles) continue;
+      const bub=G.bubbles.find(b=>b.card && b.card.id===c.id);
+      if(!bub) continue;
+      const el=[...cen.querySelectorAll('.obub')].find(e=>e.className.includes(bub.pos==='c'?'at-c':'at-'+bub.pos));
+      if(!el) continue;
+      box=el.querySelector('.bx');
+    }
+    if(!box) continue;
+    const br=box.getBoundingClientRect();
+    const fly=document.createElement('div');
+    fly.className='lensfly';
+    fly.style.left=(br.left+br.width/2)+'px';
+    fly.style.top=(br.top+br.height/2)+'px';
+    fly.innerHTML=condSVG(c,26);
+    document.body.appendChild(fly);
+    flights.push(fly);
+    requestAnimationFrame(()=>{
+      fly.style.transform=`translate(${lr.left+lr.width/2-(br.left+br.width/2)}px, ${lr.top+lr.height/2-(br.top+br.height/2)}px) scale(0.55)`;
+      fly.style.opacity='0.15';
+    });
+  }
+  if(flights.length){
+    await pthink(420);
+    flights.forEach(f=>f.remove());
   }
 }
 
@@ -2940,6 +3129,7 @@ function setPrompt(q,h,asHtml){
   const ph=document.getElementById('ph');
   if(asHtml) ph.innerHTML=h||''; else ph.textContent=h||'';
   document.getElementById('prow').innerHTML='';
+  clearBidHost();
 }
 
 function render(){
@@ -2947,6 +3137,11 @@ function render(){
   document.body.dataset.rank=G.rank.value;
 
   renderPayTable();
+  renderTotalScore();
+
+  // 得点表：宣言（bid）フェイズに入ったら参照モーダルを自動で開き、抜けたら閉じる。
+  // フェイズ中の手動クローズは尊重する（再オープンはフェイズ遷移時のみ）。
+  syncPayTableModal();
 
   // 戦表示
   const dt=document.getElementById('dealtag');
@@ -2988,22 +3183,58 @@ function render(){
     }
   }
 
+  // 1T 除去の説明
+  {
+    const lc=document.getElementById('lensCleanup');
+    if(lc){
+      if(G.cleanupMsg){
+        lc.className = 'cleanup on' + (G.cleanupClose?' act':'');
+        lc.innerHTML = `<span>${G.cleanupMsg}</span>`
+          + (G.cleanupClose
+              ? `<div class="closewrap"><button class="btn" id="cleanupCloseBtn">${T().close}</button>
+                 <span class="hint">Enter</span></div>` : '');
+      }
+      else { lc.className='cleanup'; lc.innerHTML=''; }
+    }
+  }
+
   // レンズ
   const rn=G.rank.value==='N', tv=G.trump.value;
   document.getElementById('lens').innerHTML=`
     <div class="lcol">
-      <div class="kanji ${rn?'N':'Rv'}">${rn?T().kanjiHigh:T().kanjiLow}</div>
+      <div class="stackwrap rankstack">
+        <div class="base">${T().kanjiHigh}<span class="lbl">${T().baseLbl}</span></div>
+        ${!rn ? `<div class="overlay ${G.rankFresh?'enter':''}" style="background:rgba(20,28,38,.96);border:1.5px solid var(--verdigris)">
+                   <span class="kanji Rv" style="font-size:19px">${T().kanjiLow}</span>
+                 </div>` : ''}
+      </div>
     </div>
     <div class="lcol lstack">
       <div class="sub">${rn?T().lensHigh:T().lensLow}${G.rank.holder?'・'+durLabel(G.rank.holder):''}</div>
-      <div class="trump">${tv===null?`<span class="none">${T().sbTrump}${T().noTrump}</span>`
-        :`<span class="tsym" style="color:var(${SUIT_VAR[tv]});border-color:var(${SUIT_VAR[tv]})">${SUIT_SYM[tv]}<span class="du">${durLabel(G.trump.holder)}</span></span>`}</div>
+    </div>
+    <div class="lcol">
+      <div class="stackwrap trumpstack">
+        <div class="base tbase"><span class="none">${T().noTrump}</span><span class="lbl">${T().baseLbl}</span></div>
+        ${tv!==null ? `<div class="overlay ${G.trumpFresh?'enter':''}" style="background:rgba(20,28,38,.96);border:1.5px solid var(${SUIT_VAR[tv]})">
+                   <span style="color:var(${SUIT_VAR[tv]});font-size:19px">${SUIT_SYM[tv]}</span>
+                 </div>` : ''}
+      </div>
+    </div>
+    <div class="lcol lstack">
+      <div class="sub">${tv===null?T().trumpNoneSub:T().trumpSub(SUIT_SYM[tv])}${G.trump.holder?'・'+durLabel(G.trump.holder):''}</div>
     </div>
     <div class="lcol lsep"></div>
     <div class="lcol">
       <div class="tno">${['draft','place','bid'].includes(G.phase)?'–':G.trickNo}<span class="of">/${NTRICK}</span></div>
       <div class="sub tlb">${T().sbTrick}</div>
     </div>`;
+  if(G.rankFresh || G.trumpFresh){
+    const lensEl=document.getElementById('lens');
+    requestAnimationFrame(()=>requestAnimationFrame(()=>{
+      lensEl.querySelectorAll('.overlay.enter').forEach(e=>e.classList.remove('enter'));
+    }));
+    G.rankFresh=false; G.trumpFresh=false;   // 一度見せたら消費する（次の render では通常表示）
+  }
 
   // ボード（布石行 ＋ プレイヤー4行）
   {
@@ -3093,7 +3324,7 @@ function render(){
     }
   }
 
-  // リアクティブ解決の可視化
+  // 応変魔術解決の可視化
   const center=document.getElementById('center');
   document.querySelectorAll('.offerstrip,.changebanner').forEach(e=>e.remove());
   // 状況説明と「閉じる」（カード自体はフキダシが担う）
@@ -3265,21 +3496,28 @@ function renderRoster(){
   el.innerHTML = `<div class="rhead">${T().phase[ph]||''}</div>` + rows;
 }
 
-function renderPayTable(){
-  const el=document.getElementById('paytable');
-  if(!el) return;
-  const taken = G.bids ? new Set(allP().filter(q=>G.bids[q]!==null).map(q=>G.bids[q])) : new Set();
-  const mine  = G.bids ? G.bids[HUMAN] : null;
+function ownerBg(colors,pct,base){
+  if(!colors.length) return '';
+  if(colors.length===1) return `color-mix(in srgb, ${colors[0]} ${pct}%, ${base})`;
+  const seg=100/colors.length;
+  return 'linear-gradient(90deg, '+colors.map((c,i)=>
+    `color-mix(in srgb, ${c} ${pct}%, ${base}) ${(i*seg).toFixed(2)}% ${((i+1)*seg).toFixed(2)}%`
+  ).join(', ')+')';
+}
+function buildPayTableHTML(){
   const cols=[];
   const CAP = (NPLAYER===3) ? 12 : 9;                 // 一律扱いを始める宣言値
   for(let b=0;b<=CAP;b++){
     const t = (NPLAYER===3) ? SCORE_3[b] : SCORE_T[b];
     const lbl = b===CAP ? (CAP+'+') : String(b);
-    const cls = (mine!==null&&(b===mine||(b===CAP&&mine>=CAP))) ? 'mine'
-              : (taken.has(b) ? 'taken' : '');
     const owner = G.bids ? allP().filter(q=>G.bids[q]===b || (b===CAP&&G.bids[q]>=CAP)) : [];
+    const colors = owner.map(q=>PCOL[q]);
+    const cls = colors.length ? 'ptcol owned' : 'ptcol';
+    const style = colors.length
+      ? ` style="--oc-cell:${ownerBg(colors,22,'var(--pane)')};--oc-head:${ownerBg(colors,38,'var(--pane-alt)')}"`
+      : '';
     const who = owner.map(q=>`<span style="color:${PCOL[q]}">${SHORT[q]}</span>`).join(' ');
-    cols.push(`<div class="ptcol ${cls}">
+    cols.push(`<div class="${cls}"${style}>
       <div class="b">${lbl}</div>
       <div class="v hit">${t[0]}</div>
       <div class="v n1">${t[1]}</div>
@@ -3287,8 +3525,7 @@ function renderPayTable(){
       <div class="who">${who}</div>
     </div>`);
   }
-  el.innerHTML =
-    `<div class="ttl">${T().ptTitle}<b>${T().ptSub}</b></div>
+  return `<div class="ttl">${T().ptTitle}<b>${T().ptSub}</b></div>
      <div class="ptlabels">
        <div style="visibility:hidden">-</div>
        <div class="l-hit">${T().ptExact}</div><div class="l-n1">${T().ptOff1}</div><div class="l-n2">${T().ptOff2}</div>
@@ -3296,7 +3533,34 @@ function renderPayTable(){
      </div>
      <div class="ptgrid">${cols.join('')}</div>`;
 }
+function renderPayTable(){
+  const modal=document.getElementById('paytableModal');
+  if(modal) modal.innerHTML = buildPayTableHTML();
+}
+/* 宣言フェイズに入った瞬間だけ自動で開く。フェイズ中に閉じられたら開き直さない。 */
+let PT_LAST_PHASE = null;
+function syncPayTableModal(){
+  const veil=document.getElementById('ptveil');
+  if(!veil) return;
+  const inBid = G.phase==='bid';
+  if(inBid && PT_LAST_PHASE!=='bid') veil.classList.add('on','soft');
+  if(!inBid && PT_LAST_PHASE==='bid'){ veil.classList.remove('on','soft'); clearBidHost(); }
+  PT_LAST_PHASE = G.phase;
+}
+function renderTotalScore(){
+  const el=document.getElementById('totalScore');
+  if(!el || !M) return;
+  const cols = allP().map(p=>
+    `<div class="col"><span class="nm" style="color:${PCOL[p]}">${SHORT[p]}</span>`
+    +`<span class="vl">${M.total[p]}</span></div>`
+  ).join('');
+  el.innerHTML = `<span class="lb">${T().tsLabel}</span>${cols}`;
+}
 
+function clearBidHost(){
+  const host=document.getElementById('ptBidHost');
+  if(host) host.innerHTML='';
+}
 function renderPool(){
   document.getElementById('prow').innerHTML=
     `<div class="pool">${G.pool.map(c=>condSVG(c,62,'','sel')).join('')}</div>`;
@@ -3306,11 +3570,29 @@ function renderPlacePick(chosen){
     `<div class="pool">${G.held[HUMAN].map(c=>
       condSVG(c,62,'','sel'+(chosen&&chosen.id===c.id?' chosen':''))).join('')}</div>`;
 }
+/* 応変ポップアップは卓中央のレンズを覆うため、同じ情報を欄内に持たせる。 */
+function nowBox(){
+  const rn = G.rank.value==='N', tv = G.trump.value;
+  const rCol = rn ? 'var(--brass)' : 'var(--verdigris)';
+  const rDur = G.rank.holder ? `・${durLabel(G.rank.holder)}` : '';
+  const tDur = G.trump.holder ? `・${durLabel(G.trump.holder)}` : '';
+  const tCol = tv===null ? 'var(--dim)' : `var(${SUIT_VAR[tv]})`;
+  const tVal = tv===null ? T().bnNone : SUIT_SYM[tv];
+  const tSub = tv===null ? T().trumpNoneSub : T().trumpSub(SUIT_SYM[tv]);
+  return `<div class="rnow">
+    <span class="nlb">${T().rnowLbl}</span>
+    <div class="ln"><span class="k">${T().bnRank}</span>
+      <span class="v" style="color:${rCol}">${rn?T().kanjiHigh:T().kanjiLow}</span>
+      <span class="sub">${rn?T().lensHigh:T().lensLow}${rDur}</span></div>
+    <div class="ln"><span class="k">${T().bnTrump}</span>
+      <span class="v" style="color:${tCol}">${tVal}</span>
+      <span class="sub">${tSub}${tDur}</span></div>
+  </div>`;
+}
 function renderReactivePop(){
   document.querySelectorAll('.reactpop').forEach(e=>e.remove());
   const bl=new Set(G.reserve[HUMAN].filter(c=>blockedAxis(c.axis,G.trickNo)).map(c=>c.id));
   const blNames=['R','T'].filter(a=>blockedAxis(a,G.trickNo)).map(a=>T().axName[a]);
-  const order=orderFrom(G.lead).map(p=>p===HUMAN?`<b>${NAMES[p]}</b>`:NAMES[p]).join(' &gt; ');
   const need=G.bids[HUMAN]-G.tricksWon[HUMAN];
   const st = need>0 ? T().needMore(need) : need===0 ? T().needZero : T().needOver(-need);
   const d=document.createElement('div');
@@ -3319,9 +3601,9 @@ function renderReactivePop(){
     <div class="rtext">
       <div class="rq">${T().popQ}</div>
       <div class="rh">${T().popState(G.bids[HUMAN], G.tricksWon[HUMAN], st)}</div>
-      <div class="rh">${T().popOrder(order)}</div>
       ${blNames.length?`<div class="rh" style="color:var(--warn)">${T().popLocked(blNames.join('・'))}</div>`:''}
     </div>
+    ${nowBox()}
     <div class="rrow">
       ${G.reserve[HUMAN].map(c=>condSVG(c,54,'',bl.has(c.id)?'blocked':'sel')).join('')}
       <button class="btn" id="passBtn">${T().pass}</button>
@@ -3345,7 +3627,7 @@ function renderBidPick(done, sum){
     ? T().bidTaken(done.map(q=>NAMES[q]+' '+G.bids[q]).join('　'), sum)
     : T().bidFirst;
   const sc=b=>(NPLAYER===3 ? (b>=12?SCORE_3[12]:SCORE_3[b]) : (b>=9?SCORE_T[9]:SCORE_T[b]));
-  document.getElementById('prow').innerHTML=
+  const html=
     `<div style="width:100%"><div class="bidnote">${note}</div>
      <div class="bidbtns">${Array.from({length:16},(_,i)=>{
        const t=sc(i);
@@ -3353,6 +3635,11 @@ function renderBidPick(done, sum){
          ? `<button class="bidbtn taken" disabled>${i}</button>`
          : `<button class="bidbtn" data-bid="${i}"><b>${i}</b><span class="pt">${t[0]}/${t[1]}/${t[2]}</span></button>`;
      }).join('')}</div></div>`;
+  // 得点表モーダルと右カラムの両方に置く。モーダルは最前面なので、
+  // 開いていればそちらが、閉じていれば右カラムが操作対象になる。
+  document.getElementById('prow').innerHTML = html;
+  const host=document.getElementById('ptBidHost');
+  if(host) host.innerHTML = html;
 }
 
 /* ═══════════════════════════════════════════════════════
@@ -3370,7 +3657,7 @@ document.addEventListener('click',ev=>{
     return;
   }
   if(ev.target.id==='passBtn'){resume({kind:'pass'});return;}
-  if(ev.target.id==='offerCloseBtn'){resume({kind:'close'});return;}
+  if(ev.target.id==='offerCloseBtn'||ev.target.id==='cleanupCloseBtn'){resume({kind:'close'});return;}
   const bb=ev.target.closest('.bidbtn');
   if(bb&&G.phase==='bid'){ resume({bid:+bb.dataset.bid}); return; }
   const slot=ev.target.closest('.slot');
@@ -3382,7 +3669,7 @@ document.addEventListener('click',ev=>{
   }
 });
 document.addEventListener('keydown',ev=>{
-  if(!pending||!G||!G.showClose) return;
+  if(!pending||!G||!(G.showClose||G.cleanupClose)) return;
   if(ev.key==='Enter'||ev.key===' '){ ev.preventDefault(); resume({kind:'close'}); }
 });
 // ヘルプ文中の {{s0}}〜{{s3}} を小さな紋に置き換える
@@ -3399,7 +3686,7 @@ function expandGlyphs(html){
       return `<svg class="inlsuit" width="15" height="15" viewBox="0 0 100 100">`+
              `<path d="${SUIT_PATH[i]}" fill="var(${SUIT_VAR[i]})"/></svg>`;
     })
-    // {{card:R|T , TEMP|PERSIST , suit}} → 実物と同じ条件カード
+    // {{card:R|T , TEMP|PERSIST , suit}} → 実物と同じ魔力場操作カード
     .replace(/\{\{card:([RT]),(TEMP|PERSIST)(?:,([0-3]))?\}\}/g, (_,ax,dur,su)=>
       condSVG({id:-1, axis:ax, dur:dur, suit:su===undefined?null:+su}, 76))
     // {{chip:...}} → 一覧やトラックに出るチップ
@@ -3418,6 +3705,8 @@ function applyLang(){
   set('appTitle', t.title);
   set('provisional', t.prov);
   set('helpbtn', t.rules); set('glossbtn', t.glossary); set('newgame', t.newMatch);
+  set('ptRefBtn', t.ptRefBtn); set('ptclose', t.close);
+  { const h=document.getElementById('ptTitle'); if(h) h.textContent=t.ptTitle; }
   set('lbRounds', t.roundsLabel); set('lbSpeed', t.speedLabel);
   set('helpTitle', t.helpTitle); set('glossTitle', t.glossTitle);
   set('helpclose', t.close); set('glossclose', t.close);
@@ -3429,7 +3718,7 @@ function applyLang(){
   if(rd) [...rd.options].forEach((o,i)=>o.textContent=t.rounds[i]);
   const sp=document.getElementById('speed');
   if(sp) [...sp.options].forEach((o,i)=>o.textContent=t.speeds[i]);
-  document.title = t.title + ' ' + t.prov;
+  document.title = t.title + ' Ver3';
   // 開始画面
   set('sProv', t.prov);
   set('sTagline', t.sTagline);
@@ -3438,7 +3727,7 @@ function applyLang(){
   set('startbtn', t.sStart); set('startrules', t.sRules);
   buildRounds();
   const ss=document.getElementById('sSpeed');
-  const spdVals=['1.95','0.75'];
+  const spdVals=['1.95','0.75','2.925'];
   if(ss && !ss.options.length){
     t.speeds.forEach((v,i)=>ss.add(new Option(v, spdVals[i])));
     ss.value='0.75';                       // 既定は「高速」
@@ -3468,7 +3757,11 @@ glossVeil.addEventListener('click',e=>{ if(e.target===glossVeil) glossVeil.class
 document.getElementById('helpbtn').addEventListener('click',()=>helpVeil.classList.add('on'));
 document.getElementById('helpclose').addEventListener('click',()=>helpVeil.classList.remove('on'));
 helpVeil.addEventListener('click',e=>{ if(e.target===helpVeil) helpVeil.classList.remove('on'); });
-document.addEventListener('keydown',e=>{ if(e.key==='Escape'){ helpVeil.classList.remove('on'); glossVeil.classList.remove('on'); } });
+const ptVeil=document.getElementById('ptveil');
+document.getElementById('ptRefBtn').addEventListener('click',()=>{ renderPayTable(); ptVeil.classList.remove('soft'); ptVeil.classList.add('on'); });
+document.getElementById('ptclose').addEventListener('click',()=>ptVeil.classList.remove('on','soft'));
+ptVeil.addEventListener('click',e=>{ if(e.target===ptVeil) ptVeil.classList.remove('on'); });
+document.addEventListener('keydown',e=>{ if(e.key==='Escape'){ helpVeil.classList.remove('on'); glossVeil.classList.remove('on'); ptVeil.classList.remove('on','soft'); } });
 document.getElementById('lang').addEventListener('change',e=>{
   LANG = e.target.value; applyLang();
 });
