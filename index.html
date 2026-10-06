@@ -68,13 +68,14 @@ button:focus-visible,[tabindex]:focus-visible{outline:2px solid var(--ivory);out
 .wrap{max-width:1560px;margin:0 auto;padding:8px 16px 14px;
   display:flex;flex-direction:column;
   /* 高さを確定させないと内側が縮めない。下限より低い画面ではページ側がスクロールする */
-  height:100vh;min-height:680px}
+  height:100vh;min-height:840px}
 /* 卓が余白を吸収するようにして、低い画面でも収まり高い画面でも間延びさせない */
 .layout{display:grid;grid-template-columns:1fr 330px;grid-template-rows:minmax(0,1fr);
   gap:14px;align-items:stretch;flex:1 1 auto;min-height:0}
 .colL{min-width:0;display:flex;flex-direction:column;gap:8px;min-height:0}
 .colR{min-width:0;display:flex;flex-direction:column;gap:8px;align-self:start}
-.tableframe{flex:1 1 auto;min-height:0;max-height:600px;display:flex}
+/* 卓は中身が収まる高さより縮めない（縮めると手札がトラックに重なる）。足りない分はページがスクロールする */
+.tableframe{flex:1 1 auto;min-height:530px;max-height:600px;display:flex}
 .tableframe > .table{flex:1 1 auto}
 
 /* 右カラム：行動順のプレイヤー一覧 */
